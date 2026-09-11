@@ -1,0 +1,25 @@
+# 本仓库的本地 Agent 配置
+/.agents/
+/.claude/
+/.codex/
+/AGENTS.md
+/CLAUDE.md
+/.mcp.json
+
+# 本地环境与编辑器文件
+.DS_Store
+.env
+.env.*
+!.env.example
+/.idea/
+/.vscode/
+*.swp
+*.swo
+
+# 依赖与缓存
+node_modules/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/

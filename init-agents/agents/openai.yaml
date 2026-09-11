@@ -1,0 +1,5 @@
+interface:
+  display_name: "Init Agents"
+  short_description: "初始化 Codex、Claude Code 项目脚手架和 Git 仓库"
+policy:
+  allow_implicit_invocation: false
