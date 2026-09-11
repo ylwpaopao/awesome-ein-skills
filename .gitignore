@@ -2,8 +2,6 @@
 /.agents/
 /.claude/
 /.codex/
-/AGENTS.md
-/CLAUDE.md
 /.mcp.json
 
 # 本地环境与编辑器文件
