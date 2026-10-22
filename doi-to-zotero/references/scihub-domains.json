@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "domains": [
+    {
+      "url": "https://sci-hub.sg/",
+      "reported_available_on": "2026-10-22",
+      "last_verified_at": null,
+      "last_result": "user-reported"
+    }
+  ]
+}

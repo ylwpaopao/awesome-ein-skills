@@ -1,0 +1,4 @@
+interface:
+  display_name: "DOI 论文入库"
+  short_description: "只需 DOI 或论文链接，优先用 Zotero 插件与 Playwright 收录全文"
+  default_prompt: "使用 $doi-to-zotero，根据我提供的 DOI 或文献链接创建或复用 Zotero 条目；默认存入我的文库 / AssetPricing，若我指定其他 collection 则采用指定目标。优先用 Zotero 插件操作条目、Playwright 操作网页，按 Sci-Hub → SciDown 获取全文，核对独立 PDF 附件后清理下载文件。"
