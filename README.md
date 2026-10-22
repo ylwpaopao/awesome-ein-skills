@@ -6,6 +6,7 @@
 
 | Skill | 用途 |
 | --- | --- |
+| [merriam-webster](merriam-webster/SKILL.md) | 直接调用韦氏官方 Thesaurus API，支持英文、中文词和描述找词，按义项保留同义／近义词分组、例句与原站链接。 |
 | [init-agents](init-agents/SKILL.md) | 初始化 Codex、Claude Code 项目配置和 Git 仓库，保留已有文件。支持 macOS 和 Linux。 |
 
 ## 使用

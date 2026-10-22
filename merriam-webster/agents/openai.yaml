@@ -1,0 +1,4 @@
+interface:
+  display_name: "Merriam-Webster 近义词"
+  short_description: "按义项查询韦氏同义与近义词，保留词典例句、用法标签和原站链接"
+  default_prompt: "用 $merriam-webster 帮我查“切实可行”的英文同义与近义词，保留义项分组、词典例句和原站链接。"
