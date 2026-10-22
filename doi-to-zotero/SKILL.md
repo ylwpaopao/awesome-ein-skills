@@ -18,6 +18,8 @@ description: 当用户提供 DOI 或文献链接，要求下载论文全文并�
 
 通常每次只给 DOI 或链接；collection 仅在用户主动指定时覆盖默认值，其余配置不作为调用参数。
 
+条目直接通过插件/Connector 保存，不下载或手工导出 RIS/BibTeX 作为入库中间文件。
+
 ## 工具选择
 
 **Zotero 优先使用实际可用的插件/MCP**，直接完成精确查重、DOI 导入、分类和附件操作。新建 item 可用 `library_import(kind: "identifiers")`；需要出版商站点适配器或导入元数据不完整时，使用 Chrome Zotero Connector。它没有通用的按 URL 保存接口，不能调用已移除的 `/connector/savePage`。按 [Zotero 保存方式](references/zotero-save.md) 执行。

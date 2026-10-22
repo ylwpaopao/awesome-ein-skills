@@ -14,7 +14,7 @@
 4. 站点适配器不能完成时，检查它是否已创建 item，再依次尝试 `Embedded Metadata`、`DOI` 等结构化后备方式；通用 `Web Page` 保存不是期刊论文元数据的等效成功结果。
 5. 等待并核对 item 的 DOI、标题、作者、期刊、年份、卷期和页码，以及目标 collection 归属。出现超时或 Linter 错误提示时先核对现有结果，避免再次保存产生重复项。
 
-可使用插件的单篇 RIS/BibTeX 导入作为后备；只有插件及 Connector 均不可用时，才使用 Zotero Desktop 的“通过标识符添加条目”。RIS/BibTeX 必须只含当前论文，且导入目标先核对。
+插件及 Connector 均不可用时，使用 Zotero Desktop 的“通过标识符添加条目”；仍无法完成则报告具体阻碍。不下载或手工导出 RIS/BibTeX 兜底，不在 Downloads 留下元数据中间文件。
 
 Connector 的站点适配能力不等于公开的“按 URL 保存”API。旧的 `/connector/savePage` 已移除；`/connector/saveItems` 接受翻译后的条目数据，不能当作 URL 翻译服务。依据：[官方 Connector HTTP 文档](https://www.zotero.org/support/dev/client_coding/connector_http_server)、[Zotero 团队说明](https://forums.zotero.org/discussion/128498/outdated-documentation-on-connector-http-endpoints)（2026-10-22 核对）。
 
