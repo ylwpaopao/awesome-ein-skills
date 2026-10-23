@@ -25,3 +25,5 @@ Connector 的站点适配能力不等于公开的“按 URL 保存”API。旧�
 若该接口未暴露，可用 `library_import(kind: "files")` 后检查实际返回对象；只有它返回独立 attachment 时，再用 `library_update(kind: "parent")` 归入已确认的父 item。不假定 `activeItemId` 是附件导入目标，不能误建第二个文献 item。普通 `zotero_script(access: "library")` 未必暴露完整 `Zotero.Attachments` API，不能假定方法存在。
 
 实际安装版本没有所需能力时，再用 Computer Use 操作“附件 → 添加 → 文件”和“显示文件”。首页可用插件 `paper_read(mode: "visual")` 渲染指定附件，或打开 Zotero 阅读器核对，不能用摘要/索引代替渲染验证。
+
+当前插件的 `visual` 模式只接受单个目标，使用 `paper_read({libraryID, activeItemId: ITEM_ID, activeContextItemId: ATTACHMENT_ID, mode: "visual", pages: [1]})`，不要传批量 `targets`。读取返回的渲染图片核对首页；清理源文件后再读取该附件，确认独立副本仍可读。
