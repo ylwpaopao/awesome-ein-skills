@@ -8,6 +8,7 @@ from pathlib import Path
 from vocabulary import DEFAULT_LIBRARY, DEFAULT_STATE, active_words, diff_words, load_library, merge_entries
 import transactions as tx
 import git_store
+import ui_sync
 
 DEFAULT_CONFIG = Path.home() / ".codex/config.toml"
 
@@ -60,6 +61,20 @@ def parser():
     sub.add_argument("--plan", type=Path, required=True)
     sub.add_argument("--approve", default="")
     sub.add_argument("--state", type=Path, default=DEFAULT_STATE)
+    sub = commands.add_parser("ui-plan", help="用完整 GUI 清点生成只读预览")
+    sub.add_argument("--inventory", type=Path, required=True)
+    sub.add_argument("--words", type=Path, required=True)
+    sub.add_argument("--out", type=Path, required=True)
+    for name in ("ui-prepare", "ui-verify"):
+        sub = commands.add_parser(name)
+        sub.add_argument("--current", type=Path, required=True, help="实时完整清点 JSON")
+        sub.add_argument("--state", type=Path, default=DEFAULT_STATE)
+        if name == "ui-prepare":
+            sub.add_argument("--plan", type=Path, required=True)
+            sub.add_argument("--approve", default="")
+            sub.add_argument("--out", type=Path, required=True, help="备份后待执行凭据；不表示已写入 GUI")
+        else:
+            sub.add_argument("--ready", type=Path, required=True)
     return root
 
 
@@ -107,6 +122,16 @@ def main(argv=None):
             result = git_store.apply_store_update(tx.load_plan(args.plan), args.approve, args.state)
             output(result)
             return 0 if result["status"] in {"pushed", "unchanged"} else 1
+        elif args.command == "ui-plan":
+            plan = ui_sync.plan_ui(json.loads(args.inventory.read_bytes()), json.loads(args.words.read_bytes()))
+            output(tx.save_plan(args.out, plan))
+        elif args.command == "ui-prepare":
+            ready = ui_sync.prepare_ui(tx.load_plan(args.plan), args.approve,
+                                      json.loads(args.current.read_bytes()), args.state)
+            tx.save_json(args.out, ready)
+            output(ready)
+        elif args.command == "ui-verify":
+            output(ui_sync.verify_ui(json.loads(args.ready.read_bytes()), json.loads(args.current.read_bytes()), args.state))
         return 0
     except (ValueError, OSError) as exc:
         print(str(exc), file=sys.stderr)
