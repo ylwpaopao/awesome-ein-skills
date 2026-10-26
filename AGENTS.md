@@ -1,6 +1,6 @@
 # 仓库约定
 
-本仓库保存自用 AI Agent Skills。
+本仓库用来开发及保存自用 AI Agent Skills。
 
 - 每个 Skill 独立放在根目录下，以 `SKILL.md` 为入口；配套脚本、资源和元数据放在同一目录内。
 - 新增、重命名或修改 Skill 用途时，同步更新根目录 `README.md`；Skill 名称链接到对应的 `SKILL.md`。
@@ -8,3 +8,9 @@
 - 修改脚本后，验证受影响的实际场景；涉及项目初始化时，检查已有文件是否得到保留。
 - 本地 Agent 配置、凭据和缓存按 `.gitignore` 排除。
 - 共享规则只维护在 `AGENTS.md`；`CLAUDE.md` 仅保留 `@AGENTS.md`。
+- 每次开发了新的Skill，或对已有的Skill做出了较大调整后，自动提交 git 并推送。
+
+
+## Skill 开发原则
+
+- skill中模式固定的执行步骤，优先使用代码脚本实现，其次再使用给大模型的instruction的形式实现。
