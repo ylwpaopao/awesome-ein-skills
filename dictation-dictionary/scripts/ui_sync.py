@@ -1,5 +1,6 @@
 """Review and backup receipts for UI transports; never drives the UI itself."""
 import datetime as dt
+import copy
 import json
 from pathlib import Path
 
@@ -62,19 +63,39 @@ def prepare_ui(plan, approval, current, state):
     added = [term for term in after if term not in before["words"]]
     backup = tx.backup_bytes(Path(state) / "backups", plan["target"], tx.json_bytes(current), 0o600)
     return {"status": "ready", "target": plan["target"], "plan_id": tx.plan_id(plan),
+            "plan": copy.deepcopy(plan),
             "backup": str(backup.absolute()), "backup_sha256": tx.sha(backup.read_bytes()),
             "before": current, "after": {"words": after}, "added": added}
 
 
-def verify_ui(ready, current, state):
+def check_ready(ready, state):
     if ready.get("status") != "ready" or ready.get("target") not in {"typeless", "plaud-cn"}:
         raise ValueError("a prepared UI receipt is required")
+    plan = ready.get("plan")
+    if not isinstance(plan, dict):
+        raise ValueError("receipt requires its original approved plan")
+    tx.require_approval(plan, ready.get("plan_id"))
+    original = inventory(plan["before"])
+    prepared = inventory(ready["before"])
+    _same(original, prepared)
+    after = words(plan["after"]["words"])
+    added = [term for term in after if term not in original["words"]]
+    if (ready["target"] != plan["target"] or original["target"] != plan["target"]
+            or not set(original["words"]) <= set(after)
+            or ready["after"] != plan["after"] or ready["added"] != added):
+        raise ValueError("receipt actions differ from the approved plan")
     backup = Path(ready["backup"])
     if (backup.is_symlink() or backup.resolve().parent != (Path(state) / "backups").resolve()
             or tx.sha(backup.read_bytes()) != ready["backup_sha256"]):
         raise ValueError("backup is missing, changed, or outside this state directory")
-    before, current = inventory(json.loads(backup.read_bytes())), inventory(current)
-    _same(before, inventory(ready["before"]))
+    _same(inventory(json.loads(backup.read_bytes())), prepared)
+    return ready
+
+
+def verify_ui(ready, current, state):
+    check_ready(ready, state)
+    backup = Path(ready["backup"])
+    before, current = inventory(ready["before"]), inventory(current)
     if (current["target"] != before["target"] or ready["target"] != before["target"]
             or current["evidence"]["identity"] != before["evidence"]["identity"]
             or set(current["words"]) != set(words(ready["after"]["words"]))):

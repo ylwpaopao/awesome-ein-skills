@@ -85,9 +85,12 @@ def inspect_store(repo):
         raise ValueError("detached vocabulary store is unsupported")
     remote = _git(repo, "remote", "get-url", "origin")
     _verify_remote(remote, check_privacy=False)
+    push_urls = _git(repo, "remote", "get-url", "--push", "--all", "origin").splitlines()
+    if push_urls != [remote]:
+        raise ValueError("push must have exactly one destination matching the reviewed origin URL")
     return {"repo": str(repo), "branch": branch,
             "head": _git(repo, "rev-parse", "--verify", "HEAD", optional=True),
-            "remote": remote, "status": status}
+            "remote": remote, "push_urls": push_urls, "status": status}
 
 
 def _remote_oid(repo, branch):
@@ -152,7 +155,7 @@ def apply_store_update(plan, approval, state):
     before, after = plan["before"], plan["after"]
     repo = Path(before["repo"])
     current = inspect_store(repo)
-    if any(current[k] != before[k] for k in ("repo", "head", "branch", "remote", "status")):
+    if any(current[k] != before[k] for k in ("repo", "head", "branch", "remote", "push_urls", "status")):
         raise ValueError("local Git state changed since preview")
     tx._check_current(before["file"])
     remote = fetch_remote_library(repo)
@@ -185,6 +188,11 @@ def apply_store_update(plan, approval, state):
         _verify_remote(before["remote"])
         if _remote_oid(repo, before["branch"]) != remote_head:
             raise ValueError("remote advanced before push")
+        push_urls = _git(repo, "remote", "get-url", "--push", "--all", "origin").splitlines()
+        if (_git(repo, "remote", "get-url", "origin") != before["remote"]
+                or push_urls != before["push_urls"] or push_urls != [before["remote"]]):
+            raise ValueError("push destination changed since preview")
+        # Preserve origin's resolved push semantics; passing a raw URL can reapply pushInsteadOf.
         _git(repo, "push", "origin", "HEAD:refs/heads/" + before["branch"])
         if _remote_oid(repo, before["branch"]) != head:
             raise ValueError("remote changed after push; refresh its state")

@@ -20,7 +20,7 @@
 1. 把完整清点存为 `before.json`；把主词库 `export` 的正确词数组存为 `words.json`。
 2. `ui-plan --inventory before.json --words words.json --out plan.json`。向用户展示目标账号、逐项新增/删除和保留数；当前 GUI 适配仅新增，删除数应为零。收到该具体计划的确认后才继续。
 3. 重新实时清点为 `current.json`，运行 `ui-prepare --plan plan.json --approve <id> --current current.json --out ready.json`。旧词表备份成功且哈希核验后才输出 `status:ready`。
-4. 从真实 `ready.json` 读取凭据，核对其备份文件及 SHA-256。不要手造凭据。调用 `ui.addPlaudWords(tab, ready, observedAccount)` 或 `ui.addTypelessWords(app, ready, observedAccount, proof)`。它们逐词新增，逐项读回，旧词不会删除。
+4. 执行 `ui-check-ready --ready ready.json`，核对原批准计划、备份文件及 SHA-256 后，从真实文件读取凭据，不要手造或改动。调用 `ui.addPlaudWords(tab, ready, observedAccount)` 或 `ui.addTypelessWords(app, ready, observedAccount, proof)`。辅助函数用 Web Crypto 在首次写入前重算原计划 ID，校验操作内容；运行环境不支持时停止。它们逐词新增，逐项读回，旧词不会删除。
 5. 将写入后重新清点结果存为 `after.json`，运行 `ui-verify --ready ready.json --current after.json`。只有完整词集与批准的结果相等且备份仍有效，才记录已验证成功。
 
 固定控件：PLAUD 添加 `setting-glossary-add-button` → 占位文本 `请输入术语` → `dialog-confirm-button`（保存）；Typeless 新词 → 添加新词 → 添加词汇。原生索引每次操作前重新获取，不能复用上一次的编号。PLAUD 用测试 ID 避免“保存”恰好也是已有词条时误点。CSV 格式尚未实测，`export --format csv` 仅为通用单列导出，不直接导入应用。

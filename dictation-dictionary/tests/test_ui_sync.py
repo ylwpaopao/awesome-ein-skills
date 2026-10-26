@@ -72,6 +72,14 @@ class UISyncTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             ui.verify_ui(ready, inventory(["old", "new"]), self.root)
 
+    def test_changed_ready_actions_cannot_be_verified_with_original_plan_id(self):
+        plan = ui.plan_ui(inventory(["old"]), ["approved"])
+        ready = ui.prepare_ui(plan, tx.plan_id(plan), inventory(["old"]), self.root)
+        ready["after"]["words"] = ["old", "not-approved"]
+        ready["added"] = ["not-approved"]
+        with self.assertRaisesRegex(ValueError, "approved|plan|receipt"):
+            ui.verify_ui(ready, inventory(["old", "not-approved"]), self.root)
+
     def test_cli_plan_prepare_verify_do_not_claim_gui_was_written(self):
         import ddict
         old = self.root / "inventory.json"

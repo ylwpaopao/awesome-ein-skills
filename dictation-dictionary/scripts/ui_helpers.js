@@ -11,10 +11,25 @@ function createDictationUI() {
     if (typeof identity !== "string" || !identity.trim()) throw Error("Observe the account identity first");
     return {target,words:terms(values),complete,evidence:{...proof,identity,observed_at:new Date().toISOString()}};
   }
-  function guard(ready, target, current) {
+  function canonical(value) {
+    if (Array.isArray(value)) return value.map(canonical);
+    if (value && typeof value === "object")
+      return Object.fromEntries(Object.keys(value).sort().map(key=>[key,canonical(value[key])]));
+    return value;
+  }
+  async function guard(ready, target, current) {
     if (ready?.status !== "ready" || ready.target !== target || !/^[a-f0-9]{64}$/.test(ready.plan_id)
         || !ready.backup?.startsWith("/") || !/^[a-f0-9]{64}$/.test(ready.backup_sha256))
       throw Error("Load a verified backup receipt after the user's approval");
+    const plan=ready.plan;
+    if (!plan || plan.version !== 1 || plan.target !== target) throw Error("Missing original approved plan");
+    const encoded=new TextEncoder().encode(JSON.stringify(canonical(plan),null,2)+"\n");
+    const digest=await crypto.subtle.digest("SHA-256",encoded);
+    const ident=Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,"0")).join("");
+    if (ident !== ready.plan_id || !same(terms(plan.before.words),terms(ready.before.words))
+        || plan.before.target !== target || plan.before.evidence.identity !== ready.before.evidence.identity
+        || JSON.stringify(plan.after) !== JSON.stringify(ready.after))
+      throw Error("Receipt differs from the approved plan");
     const before=terms(ready.before.words), after=terms(ready.after.words), added=terms(ready.added);
     if (!current.complete || !current.evidence.enabled || !current.evidence.all_terms
         || current.evidence.identity !== ready.before.evidence.identity || !same(current.words,before)
@@ -59,7 +74,7 @@ function createDictationUI() {
   }
   async function addPlaudWords(tab, ready, identity) {
     const initial=await readPlaudInventory(tab,identity);
-    const added=guard(ready,"plaud-cn",initial);
+    const added=await guard(ready,"plaud-cn",initial);
     const expected=[...initial.words];
     for (const value of added) {
       const live=await readPlaudInventory(tab,identity);
@@ -81,7 +96,7 @@ function createDictationUI() {
   }
   async function addTypelessWords(app, ready, identity, proof) {
     const initial=await readTypelessInventory(app,identity,proof);
-    const added=guard(ready,"typeless",initial);
+    const added=await guard(ready,"typeless",initial);
     const expected=[...initial.words];
     for (const value of added) {
       const live=await readTypelessInventory(app,identity,proof);

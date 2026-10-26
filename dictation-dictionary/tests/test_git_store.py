@@ -144,6 +144,46 @@ class StoreTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "private"):
                 store.fetch_remote_library(self.repo)
 
+    def test_different_or_multiple_push_destinations_are_rejected(self):
+        other_remote = self.root / "unexpected.git"
+        other_remote.mkdir()
+        git(other_remote, "init", "--bare", "-b", "main")
+        git(self.repo, "remote", "set-url", "--push", "origin", str(other_remote))
+        with self.assertRaisesRegex(ValueError, "push"):
+            store.plan_store_update(self.repo, merge_entries(self.library, [{"term": "private-new"}]))
+        self.assertEqual(git(other_remote, "show-ref", "--heads") if (other_remote / "refs/heads/main").exists() else "", "")
+        git(self.repo, "remote", "set-url", "--push", "origin", str(self.remote))
+        git(self.repo, "remote", "set-url", "--add", "--push", "origin", str(other_remote))
+        with self.assertRaisesRegex(ValueError, "push"):
+            store.inspect_store(self.repo)
+
+    def test_push_destination_changed_after_preview_rejects_before_local_write(self):
+        desired = merge_entries(self.library, [{"term": "private-new"}])
+        plan = store.plan_store_update(self.repo, desired)
+        other_remote = self.root / "unexpected.git"
+        other_remote.mkdir()
+        git(other_remote, "init", "--bare", "-b", "main")
+        git(self.repo, "remote", "set-url", "--push", "origin", str(other_remote))
+        before = (self.repo / "vocabulary.json").read_bytes()
+        with self.assertRaisesRegex(ValueError, "push"):
+            store.apply_store_update(plan, tx.plan_id(plan), self.state)
+        self.assertEqual((self.repo / "vocabulary.json").read_bytes(), before)
+        self.assertFalse((self.state / "backups").exists())
+        self.assertFalse((other_remote / "refs/heads/main").exists())
+
+    def test_reviewed_explicit_origin_pushurl_is_not_rewritten_as_a_raw_url(self):
+        other_remote = self.root / "unexpected.git"
+        other_remote.mkdir()
+        git(other_remote, "init", "--bare", "-b", "main")
+        git(self.repo, "remote", "set-url", "--push", "origin", str(self.remote))
+        git(self.repo, "config", "url." + str(other_remote) + ".pushInsteadOf", str(self.remote))
+        desired = merge_entries(self.library, [{"term": "private-new"}])
+        plan = store.plan_store_update(self.repo, desired)
+        result = store.apply_store_update(plan, tx.plan_id(plan), self.state)
+        self.assertEqual(result["status"], "pushed")
+        self.assertEqual(json.loads(git(self.remote, "show", "main:vocabulary.json")), desired)
+        self.assertFalse((other_remote / "refs/heads/main").exists())
+
     def test_unchanged_store_has_no_commit_or_backup(self):
         before = git(self.repo, "rev-parse", "HEAD")
         plan = store.plan_store_update(self.repo, self.library)

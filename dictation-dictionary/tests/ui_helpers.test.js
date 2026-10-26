@@ -7,10 +7,22 @@ beforeEach(async () => {
   api = new Function(`${await file.text()}; return createDictationUI();`)();
 });
 
-function ready(target, before = ["old"], added = ["new"]) {
-  return {status:"ready", target, plan_id:"a".repeat(64), backup:"/tmp/verified-backup.json",
+function canonical(value) {
+  if(Array.isArray(value)) return value.map(canonical);
+  if(value && typeof value === "object") return Object.fromEntries(Object.keys(value).sort().map(k=>[k,canonical(value[k])]));
+  return value;
+}
+
+async function ready(target, before = ["old"], added = ["new"]) {
+  const initial={target,words:before,complete:true,evidence:{kind:"count",count:before.length,
+    identity:"fixture-account",observed_at:"2026-10-26T00:00:00+00:00",all_terms:true,enabled:true}};
+  const plan={version:1,target,before:initial,after:{words:[...before,...added]},
+    diff:{added,removed:[],unchanged:before}};
+  const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(JSON.stringify(canonical(plan),null,2)+"\n"));
+  const ident=Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,"0")).join("");
+  return {status:"ready", target, plan_id:ident, plan, backup:"/tmp/verified-backup.json",
     backup_sha256:"b".repeat(64), added,
-    before:{target,words:before,complete:true,evidence:{identity:"fixture-account",all_terms:true,enabled:true}},
+    before:initial,
     after:{words:[...before,...added]}};
 }
 
@@ -84,43 +96,52 @@ test("native reader excludes background and needs an observed unfiltered list en
 test("missing backup receipt or changed account never mutates Plaud words", async()=>{
   const fake=plaud();
   await expect(api.addPlaudWords(fake.tab,{target:"plaud-cn"})).rejects.toThrow();
-  const token=ready("plaud-cn");token.before.evidence.identity="different";
+  const token=await ready("plaud-cn");token.before.evidence.identity="different";
   await expect(api.addPlaudWords(fake.tab,token,"fixture-account")).rejects.toThrow();
   expect(fake.state.words).toEqual(["old"]);
 });
 
 test("approved Plaud additions preserve existing terms and skip duplicate desired terms", async()=>{
   const fake=plaud();
-  await api.addPlaudWords(fake.tab,ready("plaud-cn"),"fixture-account");
+  await api.addPlaudWords(fake.tab,await ready("plaud-cn"),"fixture-account");
   expect(fake.state.words).toEqual(["old","new"]);
 });
 
 test("Plaud save failure stops before subsequent additions", async()=>{
   const fake=plaud(["old"],{failSave:true});
-  await expect(api.addPlaudWords(fake.tab,ready("plaud-cn",["old"],["new","later"]),"fixture-account")).rejects.toThrow();
+  await expect(api.addPlaudWords(fake.tab,await ready("plaud-cn",["old"],["new","later"]),"fixture-account")).rejects.toThrow();
   expect(fake.state.words).toEqual(["old"]);
 });
 
 test("a dictionary term named 保存 does not shadow the form save control", async()=>{
   const fake=plaud(["old","保存"]);
-  await api.addPlaudWords(fake.tab,ready("plaud-cn",["old","保存"]),"fixture-account");
+  await api.addPlaudWords(fake.tab,await ready("plaud-cn",["old","保存"]),"fixture-account");
   expect(fake.state.words).toEqual(["old","保存","new"]);
 });
 
 test("native additions derive fresh indices for every form", async()=>{
   const fake=typeless();
-  await api.addTypelessWords(fake.app,ready("typeless",["old"],["new","Claude Code"]),"fixture-account",endProof);
+  await api.addTypelessWords(fake.app,await ready("typeless",["old"],["new","Claude Code"]),"fixture-account",endProof);
   expect(fake.state.words).toEqual(["old","new","Claude Code"]);
 });
 
 test("native save failure stops and preserves old terms", async()=>{
   const fake=typeless(["old"],true);
-  await expect(api.addTypelessWords(fake.app,ready("typeless"),"fixture-account",endProof)).rejects.toThrow();
+  await expect(api.addTypelessWords(fake.app,await ready("typeless"),"fixture-account",endProof)).rejects.toThrow();
   expect(fake.state.words).toEqual(["old"]);
 });
 
 test("a changed live word set requires a new preview", async()=>{
   const fake=typeless(["changed"]);
-  await expect(api.addTypelessWords(fake.app,ready("typeless"),"fixture-account",endProof)).rejects.toThrow();
+  await expect(api.addTypelessWords(fake.app,await ready("typeless"),"fixture-account",endProof)).rejects.toThrow();
   expect(fake.state.words).toEqual(["changed"]);
+});
+
+test("modified ready actions are rejected before any GUI word is written", async()=>{
+  const fake=plaud();
+  const token=await ready("plaud-cn",["old"],["approved"]);
+  token.after.words=["old","not-approved"];
+  token.added=["not-approved"];
+  await expect(api.addPlaudWords(fake.tab,token,"fixture-account")).rejects.toThrow();
+  expect(fake.state.words).toEqual(["old"]);
 });

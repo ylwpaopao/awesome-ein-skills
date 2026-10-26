@@ -65,9 +65,10 @@ def parser():
     sub.add_argument("--inventory", type=Path, required=True)
     sub.add_argument("--words", type=Path, required=True)
     sub.add_argument("--out", type=Path, required=True)
-    for name in ("ui-prepare", "ui-verify"):
+    for name in ("ui-prepare", "ui-check-ready", "ui-verify"):
         sub = commands.add_parser(name)
-        sub.add_argument("--current", type=Path, required=True, help="实时完整清点 JSON")
+        if name != "ui-check-ready":
+            sub.add_argument("--current", type=Path, required=True, help="实时完整清点 JSON")
         sub.add_argument("--state", type=Path, default=DEFAULT_STATE)
         if name == "ui-prepare":
             sub.add_argument("--plan", type=Path, required=True)
@@ -132,6 +133,8 @@ def main(argv=None):
             output(ready)
         elif args.command == "ui-verify":
             output(ui_sync.verify_ui(json.loads(args.ready.read_bytes()), json.loads(args.current.read_bytes()), args.state))
+        elif args.command == "ui-check-ready":
+            output(ui_sync.check_ready(json.loads(args.ready.read_bytes()), args.state))
         return 0
     except (ValueError, OSError) as exc:
         print(str(exc), file=sys.stderr)
