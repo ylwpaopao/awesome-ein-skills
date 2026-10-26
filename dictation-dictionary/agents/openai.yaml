@@ -1,0 +1,4 @@
+interface:
+  display_name: "听写词库"
+  short_description: "从转写纠错积累主词库，经确认和备份后同步 Typeless、PLAUD 与 Codex"
+  default_prompt: "使用 $dictation-dictionary 从这些听写错误提出候选，并生成主词库及三端变更预览，等待我确认后再写入。"
