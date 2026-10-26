@@ -7,6 +7,7 @@ from pathlib import Path
 
 from vocabulary import DEFAULT_LIBRARY, DEFAULT_STATE, active_words, diff_words, load_library, merge_entries
 import transactions as tx
+import git_store
 
 DEFAULT_CONFIG = Path.home() / ".codex/config.toml"
 
@@ -47,6 +48,18 @@ def parser():
     sub.add_argument("--plan", type=Path, required=True)
     sub.add_argument("--approve", default="", help="用户已确认的完整 plan id")
     sub.add_argument("--state", type=Path, default=DEFAULT_STATE)
+    for name in ("git-init", "git-inspect", "git-fetch", "git-plan"):
+        sub = commands.add_parser(name)
+        sub.add_argument("--repo", type=Path, default=DEFAULT_LIBRARY.parent)
+        if name == "git-init":
+            sub.add_argument("--remote", required=True, help="已有空的私有 GitHub 仓库 URL；仅初始化 Git 元数据")
+        elif name == "git-plan":
+            sub.add_argument("--desired", type=Path, required=True)
+            sub.add_argument("--out", type=Path, required=True)
+    sub = commands.add_parser("git-apply")
+    sub.add_argument("--plan", type=Path, required=True)
+    sub.add_argument("--approve", default="")
+    sub.add_argument("--state", type=Path, default=DEFAULT_STATE)
     return root
 
 
@@ -82,6 +95,18 @@ def main(argv=None):
             output({"id": tx.plan_id(plan), "plan": plan})
         elif args.command == "apply":
             output(tx.apply_file_plan(tx.load_plan(args.plan), args.approve, args.state))
+        elif args.command == "git-init":
+            output(git_store.initialize_store(args.repo, args.remote))
+        elif args.command == "git-inspect":
+            output(git_store.inspect_store(args.repo))
+        elif args.command == "git-fetch":
+            output(git_store.fetch_remote_library(args.repo))
+        elif args.command == "git-plan":
+            output(tx.save_plan(args.out, git_store.plan_store_update(args.repo, load_library(args.desired))))
+        elif args.command == "git-apply":
+            result = git_store.apply_store_update(tx.load_plan(args.plan), args.approve, args.state)
+            output(result)
+            return 0 if result["status"] in {"pushed", "unchanged"} else 1
         return 0
     except (ValueError, OSError) as exc:
         print(str(exc), file=sys.stderr)
