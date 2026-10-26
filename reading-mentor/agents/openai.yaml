@@ -1,0 +1,4 @@
+interface:
+  display_name: "阅读主线讲解"
+  short_description: "从阅读中的零散问题推断知识缺口，围绕文档主线串起背景、术语与解答"
+  default_prompt: "使用 $reading-mentor，根据原文和我的问题补齐必要背景，沿文档主线讲清，再补答遗漏。"
