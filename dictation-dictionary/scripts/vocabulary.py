@@ -7,7 +7,8 @@ from urllib.parse import urlsplit
 
 DEFAULT_LIBRARY = Path.home() / ".config/dictation-dictionary/vocabulary.json"
 DEFAULT_STATE = Path.home() / ".local/state/dictation-dictionary"
-FIELDS = {"id", "term", "misheard_as", "domains", "sources", "enabled"}
+APP_TARGETS = ("codex", "typeless", "plaud-cn")
+FIELDS = {"id", "term", "misheard_as", "domains", "sources", "enabled", "excluded_targets"}
 
 
 def word(value):
@@ -48,16 +49,20 @@ def validate_library(value):
         raise ValueError("unsupported library version or entries")
     result, ids, terms = [], set(), set()
     for item in value["entries"]:
-        if not isinstance(item, dict) or set(item) != FIELDS:
-            raise ValueError("entry fields must be id, term, misheard_as, domains, sources, enabled")
+        if (not isinstance(item, dict) or set(item) - FIELDS
+                or not FIELDS - {"excluded_targets"} <= set(item)):
+            raise ValueError("invalid entry fields; excluded_targets is optional for legacy entries")
         ident, term = word(item["id"]), word(item["term"])
+        excluded = words(item.get("excluded_targets", []))
+        if any(target not in APP_TARGETS for target in excluded):
+            raise ValueError("excluded_targets supports codex, typeless and plaud-cn only")
         if ident in ids or term in terms or type(item["enabled"]) is not bool:
             raise ValueError("duplicate id/term or invalid enabled state")
         ids.add(ident)
         terms.add(term)
         result.append({"id": ident, "term": term, "misheard_as": words(item["misheard_as"]),
                        "domains": words(item["domains"]), "sources": _sources(item["sources"]),
-                       "enabled": item["enabled"]})
+                       "enabled": item["enabled"], "excluded_targets": excluded})
     return {"version": 1, "entries": result}
 
 
@@ -79,7 +84,8 @@ def merge_entries(base, incoming):
             raise ValueError("invalid candidate fields")
         term = word(candidate["term"])
         defaults = {"id": str(uuid.uuid5(uuid.NAMESPACE_URL, "dictation-dictionary:" + term)),
-                    "term": term, "misheard_as": [], "domains": [], "sources": [], "enabled": True}
+                    "term": term, "misheard_as": [], "domains": [], "sources": [], "enabled": True,
+                    "excluded_targets": []}
         defaults.update(copy.deepcopy(candidate))
         new = validate_library({"version": 1, "entries": [defaults]})["entries"][0]
         if term in by_term:
@@ -90,14 +96,25 @@ def merge_entries(base, incoming):
                         old[field].append(item)
             if "enabled" in candidate:
                 old["enabled"] = new["enabled"]
+            if "excluded_targets" in candidate:
+                old["excluded_targets"] = new["excluded_targets"]
         else:
             result["entries"].append(new)
             by_term[term] = new
     return validate_library(result)
 
 
-def active_words(library):
-    return [v["term"] for v in validate_library(library)["entries"] if v["enabled"]]
+def active_words(library, target=None):
+    if target is not None and target not in APP_TARGETS:
+        raise ValueError("unsupported application target")
+    return [v["term"] for v in validate_library(library)["entries"]
+            if v["enabled"] and (target is None or target not in v["excluded_targets"])]
+
+
+def exclusions(library):
+    entries = validate_library(library)["entries"]
+    return {target: [v["term"] for v in entries if target in v["excluded_targets"]]
+            for target in APP_TARGETS}
 
 
 def diff_words(before, after):

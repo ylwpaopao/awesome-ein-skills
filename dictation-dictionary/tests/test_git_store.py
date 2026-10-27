@@ -97,6 +97,31 @@ class StoreTests(unittest.TestCase):
         self.assertEqual(active_words(actual), ["remote", "local"])
         self.assertFalse(actual["entries"][0]["enabled"])
 
+    def test_local_source_update_preserves_new_remote_exclusions_and_enabled_state(self):
+        remote_lib = merge_entries(self.library, [{"term": "old", "enabled": False,
+                                                   "excluded_targets": ["codex", "typeless"]}])
+        self.write_commit(self.other, remote_lib)
+        git(self.other, "push")
+        desired = merge_entries(self.library, [{"term": "old", "sources": [{"url": "https://example.com/new"}]}])
+        plan = store.plan_store_update(self.repo, desired)
+        item = plan["after"]["library"]["entries"][0]
+        self.assertEqual(item["excluded_targets"], ["codex", "typeless"])
+        self.assertFalse(item["enabled"])
+        self.assertEqual(item["sources"], [{"url": "https://example.com/new"}])
+
+    def test_concurrent_new_term_with_conflicting_policy_refuses_to_clear_remote_exclusions(self):
+        remote_lib = merge_entries(self.library, [{"term": "concurrent",
+                                                   "excluded_targets": ["codex", "typeless"]}])
+        self.write_commit(self.other, remote_lib)
+        git(self.other, "push")
+        desired = merge_entries(self.library, [{"term": "concurrent",
+                                               "sources": [{"url": "https://example.com/new"}]}])
+        before = (self.repo / "vocabulary.json").read_bytes()
+        with self.assertRaisesRegex(ValueError, "conflicting.*policy"):
+            store.plan_store_update(self.repo, desired)
+        self.assertEqual((self.repo / "vocabulary.json").read_bytes(), before)
+        self.assertEqual(json.loads(git(self.remote, "show", "main:vocabulary.json")), remote_lib)
+
     def test_unrelated_staged_file_prevents_any_commit(self):
         (self.repo / "other.txt").write_text("keep this separate")
         git(self.repo, "add", "other.txt")

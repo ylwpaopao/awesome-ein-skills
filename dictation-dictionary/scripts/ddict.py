@@ -5,7 +5,8 @@ import json
 import sys
 from pathlib import Path
 
-from vocabulary import DEFAULT_LIBRARY, DEFAULT_STATE, active_words, diff_words, load_library, merge_entries
+from vocabulary import (APP_TARGETS, DEFAULT_LIBRARY, DEFAULT_STATE, active_words,
+                        diff_words, exclusions, load_library, merge_entries)
 import transactions as tx
 import git_store
 import ui_sync
@@ -20,11 +21,12 @@ def output(value):
 def parser():
     root = argparse.ArgumentParser(description="听写词库：预览、确认、备份后同步。默认命令只读。")
     commands = root.add_subparsers(dest="command", required=True)
-    for name in ("validate", "export"):
+    for name in ("validate", "export", "exclusions"):
         sub = commands.add_parser(name)
         sub.add_argument("--library", type=Path, default=DEFAULT_LIBRARY)
         if name == "export":
             sub.add_argument("--format", choices=["json", "csv"], default="json")
+            sub.add_argument("--target", choices=APP_TARGETS, help="按应用过滤持久排除项；省略时导出全部启用词")
     sub = commands.add_parser("diff")
     sub.add_argument("--before", type=Path, required=True, help="JSON string array")
     sub.add_argument("--after", type=Path, required=True, help="JSON string array")
@@ -33,7 +35,9 @@ def parser():
         sub.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
         sub.add_argument("--out", type=Path, required=True)
         if name == "codex-plan":
-            sub.add_argument("--words", type=Path, required=True, help="JSON string array")
+            group = sub.add_mutually_exclusive_group(required=True)
+            group.add_argument("--words", type=Path, help="低层输入：已按目标过滤的 JSON string array")
+            group.add_argument("--library", type=Path, help="推荐：从主词库读取并遵守 codex 排除项")
             sub.add_argument("--replace", action="store_true", help="预览明确的替换/删除，默认仅增补")
         else:
             sub.add_argument("--backup", type=Path, required=True)
@@ -63,7 +67,9 @@ def parser():
     sub.add_argument("--state", type=Path, default=DEFAULT_STATE)
     sub = commands.add_parser("ui-plan", help="用完整 GUI 清点生成只读预览")
     sub.add_argument("--inventory", type=Path, required=True)
-    sub.add_argument("--words", type=Path, required=True)
+    group = sub.add_mutually_exclusive_group(required=True)
+    group.add_argument("--words", type=Path, help="低层输入：已按目标过滤的 JSON string array")
+    group.add_argument("--library", type=Path, help="推荐：从主词库按 inventory.target 过滤排除项")
     sub.add_argument("--out", type=Path, required=True)
     for name in ("ui-prepare", "ui-check-ready", "ui-verify"):
         sub = commands.add_parser(name)
@@ -86,16 +92,19 @@ def main(argv=None):
             value = load_library(args.library)
             output({"valid": True, "entries": len(value["entries"])})
         elif args.command == "export":
-            value = active_words(load_library(args.library))
+            value = active_words(load_library(args.library), args.target)
             if args.format == "csv":
                 writer = csv.writer(sys.stdout, lineterminator="\n")
                 writer.writerows([[v] for v in value])
             else:
                 output(value)
+        elif args.command == "exclusions":
+            output(exclusions(load_library(args.library)))
         elif args.command == "diff":
             output(diff_words(json.loads(args.before.read_text()), json.loads(args.after.read_text())))
         elif args.command == "codex-plan":
-            plan = tx.plan_codex(args.config, json.loads(args.words.read_bytes()), args.replace)
+            desired = active_words(load_library(args.library), "codex") if args.library else json.loads(args.words.read_bytes())
+            plan = tx.plan_codex(args.config, desired, args.replace)
             output(tx.save_plan(args.out, plan))
         elif args.command == "restore-codex-plan":
             output(tx.save_plan(args.out, tx.plan_restore_codex(args.config, args.backup)))
@@ -124,7 +133,9 @@ def main(argv=None):
             output(result)
             return 0 if result["status"] in {"pushed", "unchanged"} else 1
         elif args.command == "ui-plan":
-            plan = ui_sync.plan_ui(json.loads(args.inventory.read_bytes()), json.loads(args.words.read_bytes()))
+            current = ui_sync.inventory(json.loads(args.inventory.read_bytes()))
+            desired = active_words(load_library(args.library), current["target"]) if args.library else json.loads(args.words.read_bytes())
+            plan = ui_sync.plan_ui(current, desired)
             output(tx.save_plan(args.out, plan))
         elif args.command == "ui-prepare":
             ready = ui_sync.prepare_ui(tx.load_plan(args.plan), args.approve,

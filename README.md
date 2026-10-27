@@ -10,7 +10,7 @@
 | [init-agents](init-agents/SKILL.md) | 初始化 Codex、Claude Code 项目配置和 Git 仓库，保留已有文件。支持 macOS 和 Linux。 |
 | [reading-mentor](reading-mentor/SKILL.md) | 阅读文档时，从批量问题推断知识缺口，围绕主线串起背景、术语与解答。支持链接、PDF 和原文。 |
 | [doi-to-zotero](doi-to-zotero/SKILL.md) | 只需 DOI 或文献链接，优先用 Zotero 插件与 Playwright 收录全文；默认存入 AssetPricing，支持指定其他分类，核对附件后清理下载文件。 |
-| [dictation-dictionary](dictation-dictionary/SKILL.md) | 从听写纠错积累独立主词库，经逐批确认及备份后同步 Typeless、PLAUD 中国区和 Codex。 |
+| [dictation-dictionary](dictation-dictionary/SKILL.md) | 从听写纠错积累独立主词库，维护按应用排除清单，经确认及备份后同步 Typeless、PLAUD 中国区和 Codex。 |
 
 ## 使用
 

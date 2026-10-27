@@ -11,14 +11,14 @@
 - 界面首次打开可能短暂显示空表。确认加载完成后清点。没有数量/到底证据时 `complete:false`，停止写入。
 - 清点只保存结构化词表和证据；不要落盘全页 DOM、无障碍快照、会议正文或截图。账号标识使用最小必要显示名，不保存凭据。
 
-以上路径与 DOM 在 2026-10-26 实机只读核查过；当时 Typeless v2.8.3 读取 14 词、PLAUD 读取 19 词。实际新增尚待用户批准后验证，不能把模拟测试说成实机写入成功。
+以上路径与 DOM 在 2026-10-26 实机只读核查过；当时 Typeless v2.8.3 读取 14 词、PLAUD 读取 19 词。2026-10-27 经具体批次批准，PLAUD 实机新增两词，完整读回 21 词且原 19 词保留，备份及回执核验通过。Typeless 新增、两端删除及 CSV 导入仍未实测；未来各批写入仍需各自确认和核验。
 
 ## 预览 → 批准 → 备份 → 写入 → 核验
 
 所有路径放在私有本地状态目录的一次运行子目录，例如 `$HOME/.local/state/dictation-dictionary/runs/<unique>/`。命令入口记为 `uv run python <skill-dir>/scripts/ddict.py`；参数以 `--help` 为准。
 
-1. 把完整清点存为 `before.json`；把主词库 `export` 的正确词数组存为 `words.json`。
-2. `ui-plan --inventory before.json --words words.json --out plan.json`。向用户展示目标账号、逐项新增/删除和保留数；当前 GUI 适配仅新增，删除数应为零。收到该具体计划的确认后才继续。
+1. 把获准应用的完整清点存为 `before.json`；确认主词库包含本次已批准的排除规则。
+2. `ui-plan --inventory before.json --library <vocabulary.json> --out plan.json` 自动按目标过滤排除项。向用户展示目标账号、逐项新增/删除和保留数；当前 GUI 适配仅新增，删除数应为零。收到该具体计划的确认后才继续。使用低层 `--words` 时须先 `export --target <app>`，不能使用全量导出。
 3. 重新实时清点为 `current.json`，运行 `ui-prepare --plan plan.json --approve <id> --current current.json --out ready.json`。旧词表备份成功且哈希核验后才输出 `status:ready`。
 4. 执行 `ui-check-ready --ready ready.json`，核对原批准计划、备份文件及 SHA-256 后，从真实文件读取凭据，不要手造或改动。调用 `ui.addPlaudWords(tab, ready, observedAccount)` 或 `ui.addTypelessWords(app, ready, observedAccount, proof)`。辅助函数用 Web Crypto 在首次写入前重算原计划 ID，校验操作内容；运行环境不支持时停止。它们逐词新增，逐项读回，旧词不会删除。
 5. 将写入后重新清点结果存为 `after.json`，运行 `ui-verify --ready ready.json --current after.json`。只有完整词集与批准的结果相等且备份仍有效，才记录已验证成功。

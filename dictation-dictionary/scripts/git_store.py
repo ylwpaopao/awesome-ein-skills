@@ -134,7 +134,20 @@ def plan_store_update(repo, desired):
     if remote_head and remote_head != head and (not head or _ancestor(repo, head, remote_head)):
         base = _at_commit(repo, head)["library"] if head else {"version": 1, "entries": []}
         previous = {e["term"]: e for e in base["entries"]}
-        changes = [e for e in desired["entries"] if previous.get(e["term"]) != e]
+        remote_entries = {e["term"]: e for e in remote["library"]["entries"]}
+        changes = []
+        for entry in desired["entries"]:
+            old = previous.get(entry["term"])
+            if old is None:
+                peer = remote_entries.get(entry["term"])
+                if peer and any(peer[key] != entry[key] for key in ("enabled", "excluded_targets")):
+                    raise ValueError("concurrent new term has conflicting sync policy; review remote policy first")
+                changes.append(entry)
+            elif old != entry:
+                # Send only locally changed fields, not stale copies of remote policy.
+                changes.append({"term": entry["term"], **{
+                    key: entry[key] for key in ("misheard_as", "domains", "sources", "enabled", "excluded_targets")
+                    if old[key] != entry[key]}})
         merged = remote["library"]
         remote_terms = {e["term"] for e in merged["entries"]}
         # Preserve local entries without overwriting newer remote metadata with stale copies.
