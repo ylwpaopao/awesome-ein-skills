@@ -50,17 +50,13 @@ test('PPTX contains every checked HTML page as an identical full-canvas embedded
   expect(qa.fonts.filter(font => font.status === 'loaded')).toHaveLength(3);
 }, 60000);
 
-test('PDF embeds every checked HTML page as a high-resolution image at exact paper dimensions', async () => {
+test('PDF is printed from the same HTML with matching page count and paper dimensions', async () => {
   const output = join(dir, 'slides.pdf');
   const result = await exportSlides({ input: html, output, qaDir: join(dir, 'qa-pdf') });
   const pdf = await PDFDocument.load(await readFile(output));
   expect(pdf.getPageCount()).toBe(2);
-  expect(result.searchableText).toBe(false);
-  expect(result.validation.embeddedPageImages).toBe(true);
-  expect(result.validation.images).toHaveLength(2);
-  expect(result.validation.images.every(size => size.width >= 1920 && size.height >= 1081)).toBe(true);
   expect(result.sourceSha256).toBe(createHash('sha256').update(source).digest('hex'));
-  expect(pdf.getPages().every(page => Math.abs(page.getWidth() - 720) < .001 && Math.abs(page.getHeight() - 405.3750393700788) < .001)).toBe(true);
+  expect(pdf.getPages().every(page => Math.abs(page.getWidth() - 720) <= 1 && Math.abs(page.getHeight() - 405.375) <= 1)).toBe(true);
   expect((await readFile(html)).equals(source)).toBe(true);
 }, 60000);
 

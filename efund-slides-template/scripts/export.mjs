@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { parseArgs } from 'node:util';
 import PptxGenJS from 'pptxgenjs';
 import JSZip from 'jszip';
-import { PDFDocument, PDFName, PDFDict, PDFRawStream } from 'pdf-lib';
+import { PDFDocument } from 'pdf-lib';
 import { check } from './check.mjs';
 
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -53,20 +53,13 @@ export async function verifyPptx(bytes, { slides, canvas, screenshots }) {
   return { slides, canvasEmu: expected, images: imageSizes, embeddedImagesMatch: true };
 }
 
-export async function verifyPdf(bytes, { slides, canvas, scale = 2 }) {
+export async function verifyPdf(bytes, { slides, canvas }) {
   const pdf = await PDFDocument.load(bytes);
   ensure(pdf.getPageCount() === slides, 'PDF 页数与 HTML 不一致');
   const dimensions = pdf.getPages().map(page => page.getSize());
-  ensure(dimensions.every(size => Math.abs(size.width - canvas.width * .75) < .001 && Math.abs(size.height - canvas.height * .75) < .001), 'PDF 页面尺寸与 HTML 不一致');
-  const images = pdf.getPages().map((page, i) => {
-    const objects = page.node.Resources()?.lookupMaybe(PDFName.of('XObject'), PDFDict);
-    const embedded = (objects?.entries() ?? []).map(([, ref]) => pdf.context.lookup(ref)).filter(object => object instanceof PDFRawStream && object.dict.get(PDFName.of('Subtype')) === PDFName.of('Image'));
-    ensure(embedded.length === 1, `PDF 第 ${i + 1} 页没有完整的单页截图`);
-    const size = { width: Number(embedded[0].dict.get(PDFName.of('Width'))), height: Number(embedded[0].dict.get(PDFName.of('Height'))) };
-    ensure(Math.abs(size.width - canvas.width * scale) <= 2 && Math.abs(size.height - canvas.height * scale) <= 2, `PDF 第 ${i + 1} 页截图尺寸异常`);
-    return size;
-  });
-  return { slides, pagesPoints: dimensions, images, embeddedPageImages: true };
+  // Chromium rounds CSS paper sizes slightly when converting to PDF points.
+  ensure(dimensions.every(size => Math.abs(size.width - canvas.width * .75) <= 1 && Math.abs(size.height - canvas.height * .75) <= 1), 'PDF 页面尺寸与 HTML 不一致');
+  return { slides, pagesPoints: dimensions };
 }
 
 async function writeArtifact(output, bytes, force) {
@@ -131,7 +124,7 @@ export async function exportSlides({ input, output, qaDir, browser, channel = 'c
   }
   await mkdir(dirname(dest), { recursive: true });
   await writeArtifact(dest, bytes, force);
-  const result = { ok: true, format, output: dest, slides: report.slides, canvas, sourceSha256, outputSha256: hash(bytes), qaReport: join(qa, 'report.json'), validation, ...(format === 'pptx' ? { editableElements: false, note: '每页为 HTML 高清截图；修改内容请编辑源 deck.json 并重新构建和导出。' } : { searchableText: false, note: '每页为 HTML 高清截图，保留视觉外观；PDF 文字不可搜索或选中，修改内容请回到源 JSON/HTML。' }) };
+  const result = { ok: true, format, output: dest, slides: report.slides, canvas, sourceSha256, outputSha256: hash(bytes), qaReport: join(qa, 'report.json'), validation, ...(format === 'pptx' ? { editableElements: false, note: '每页为 HTML 高清截图；修改内容请编辑源 deck.json 并重新构建和导出。' } : {}) };
   await writeFile(join(qa, 'export.json'), JSON.stringify(result, null, 2));
   return result;
 }
@@ -139,7 +132,7 @@ export async function exportSlides({ input, output, qaDir, browser, channel = 'c
 if (import.meta.main) {
   try {
     const { values } = parseArgs({ options: { input: { type: 'string' }, output: { type: 'string' }, 'qa-dir': { type: 'string' }, browser: { type: 'string' }, channel: { type: 'string' }, scale: { type: 'string' }, force: { type: 'boolean' }, help: { type: 'boolean' } } });
-    if (values.help) console.log('bun scripts/export.mjs --input slides.html --output slides.pptx|slides.pdf [--qa-dir qa] [--scale 2] [--channel chrome | --browser /path/to/browser] [--force]\n始终先检查 HTML。PPTX/PDF 每页为完整高清截图；PPTX 正文不可逐元素编辑，PDF 文字不可搜索或选中。HTML 保留可编辑内容。');
+    if (values.help) console.log('bun scripts/export.mjs --input slides.html --output slides.pptx|slides.pdf [--qa-dir qa] [--scale 2] [--channel chrome | --browser /path/to/browser] [--force]\n始终先检查 HTML。PDF 从同一 HTML 打印；PPTX 每页为完整高清截图，正文不可逐元素编辑。HTML 保留可编辑内容。');
     else console.log(JSON.stringify(await exportSlides({ ...values, qaDir: values['qa-dir'], scale: values.scale === undefined ? 2 : Number(values.scale) }), null, 2));
   } catch (e) { console.error(e.message); process.exitCode = 1; }
 }

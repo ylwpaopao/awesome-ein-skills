@@ -5,7 +5,6 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 import { reviewContent } from './content-review.mjs';
-import { PDFDocument } from 'pdf-lib';
 
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 
@@ -80,20 +79,12 @@ export async function check({ input, out, pdf = false, browser: executablePath, 
     await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
     let pdfPath;
     if (pdf && !issues.length && !errors.length && !requests.length) {
+      await page.emulateMedia({ media: 'print' });
       pdfPath = resolve(outDir, 'slides.pdf');
-      // Chromium's synthetic EFund bold produces broken Type3 outlines in print PDFs.
-      // Package the same checked pixels as PPTX; retain the exact CSS canvas in points.
-      const document = await PDFDocument.create();
-      document.setCreator('efund-slides-template');
-      for (const screenshot of screenshots) {
-        const picture = await document.embedPng(await readFile(resolve(outDir, screenshot.file)));
-        const width = state.canvas.width * .75, height = state.canvas.height * .75;
-        document.addPage([width, height]).drawImage(picture, {x: 0, y: 0, width, height});
-      }
-      await writeFile(pdfPath, await document.save());
+      await page.pdf({ path: pdfPath, printBackground: true, preferCSSPageSize: true, displayHeaderFooter: false });
     }
     if (digest(await readFile(htmlPath)) !== inputSha256) issues.push({reason: '检查过程中 HTML 被修改，请重新运行'});
-    const report = { ok: !issues.length && !errors.length && !requests.length, input: htmlPath, inputSha256, slides: state.count, canvas: state.canvas, scale, issues, warnings, errors, networkRequests: requests, fonts: state.fonts, screenshots: outDir, screenshotFiles: screenshots, pdf: pdfPath, ...(pdfPath ? {pdfMode: 'page-images', searchableText: false} : {}), visualReview: 'required' };
+    const report = { ok: !issues.length && !errors.length && !requests.length, input: htmlPath, inputSha256, slides: state.count, canvas: state.canvas, scale, issues, warnings, errors, networkRequests: requests, fonts: state.fonts, screenshots: outDir, screenshotFiles: screenshots, pdf: pdfPath, ...(pdfPath ? {pdfMode: 'browser-print'} : {}), visualReview: 'required' };
     await writeFile(resolve(outDir, 'text-layout.json'), JSON.stringify(state.readability.textLayout, null, 2));
     // This is deliberately an unfinished worksheet. Never manufacture visual approval.
     const review = {inputSha256, method: '', reviewer: '', slides: screenshots.map(s => ({slide: s.slide, image: s.file, imageSha256: s.sha256, verdict: 'pending', observation: '', checks: {hierarchy: null, layout: null, readability: null, evidence: null, privacy: null}, findings: [], changes: []}))};

@@ -107,5 +107,5 @@ Agent 负责整理材料、选版式和控制每页信息量；Bun 运行脚本�
 - 底部按钮提供总览、全屏和打印；`#3` 直达第三页，`?overview` 打开总览。
 - 运行 `check.mjs --input slides.html --out qa`，检查输出包括逐页 PNG、`report.json`、`text-layout.json` 和待填写的 `visual-review.template.json`。`report.json.ok` 仅代表自动检查通过；逐项处理 `warnings`，查看真实换行，再按 [quality-review.md](quality-review.md) 逐页观察、填写 `visual-review.json` 并用 `verify-review.mjs` 校验。长文本失败应调整输入后重新生成和检查。
 - 用户要求 PDF 或 PPT/PPTX 时仍先完成 HTML；运行 `bun scripts/export.mjs --input slides.html --output slides.pdf` 或把输出后缀换成 `.pptx`。可用 `--qa-dir` 指定导出检查目录；默认导出会重跑浏览器检查，失败不写交付文件。默认保留已有输出，更新时才用 `--force`。
-- PDF/PPTX 均封装默认2倍分辨率的 HTML 整页图像，可用 `--scale 3` 或 `4` 提高清晰度。PPTX 不能逐元素编辑，PDF 文字不可直接选中或搜索；修改回到 JSON/HTML。采用截图是因为直接浏览器打印已复现中文合成粗体缺笔；播放器打印按钮仅作浏览器预览，正式交付使用导出脚本。每种最终格式分别核对页数、顺序、尺寸、实际打开和逐页外观，不能以 HTML 截图代替目标软件打开证据。
+- PPTX 将每页 HTML 渲染成默认2倍分辨率的整页图像，可用 `--scale 3` 或 `4` 提高清晰度，不能逐元素编辑文字与图表；修改回到 JSON/HTML。PDF 由同一 HTML 直接打印。播放器提供打印预览，正式交付优先使用导出脚本以保留检查报告。每种最终格式分别核对页数、顺序、尺寸、实际打开和逐页外观，不能以 HTML 截图代替目标软件打开证据。
 - 构建是确定性的模板填充；用户指定的复杂新布局可以扩展 `render.mjs` 与 CSS，修改后覆盖原有场景并重新检查。
