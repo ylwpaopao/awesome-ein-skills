@@ -43,6 +43,36 @@ function picture(v, path) {
   if (v.fit !== undefined && !['contain', 'cover'].includes(v.fit)) fail(path, 'image.fit 仅支持 contain / cover');
 }
 
+function indices(values, path, size, max = size) {
+  if (values === undefined) return;
+  if (!Array.isArray(values) || values.length > max || new Set(values).size !== values.length || values.some(n => !Number.isInteger(n) || n < 0 || n >= size)) fail(path, `需要不重复的零基索引，范围 0–${size - 1}，最多 ${max} 个`);
+}
+
+function table(v, path) {
+  object(v, path); strings(v.columns, `${path}.columns`, 10);
+  text(v.title, `${path}.title`, true); list(v.rows, `${path}.rows`, 15);
+  v.rows.forEach((row, j) => {
+    if (!Array.isArray(row) || row.length !== v.columns.length || row.some(x => typeof x !== 'string' && !(typeof x === 'number' && Number.isFinite(x)))) fail(`${path}.rows[${j}]`, '单元格数须匹配表头，值为文字或有限数值');
+  });
+  if (v.mode !== undefined && !['striped', 'row-highlight', 'compact-comparison', 'task-list'].includes(v.mode)) fail(`${path}.mode`, '使用 striped / row-highlight / compact-comparison / task-list');
+  indices(v.numericColumns, `${path}.numericColumns`, v.columns.length);
+  indices(v.highlightRows, `${path}.highlightRows`, v.rows.length, 2);
+  indices(v.subtotalRows, `${path}.subtotalRows`, v.rows.length);
+  if (v.columnWidths !== undefined && (!Array.isArray(v.columnWidths) || v.columnWidths.length !== v.columns.length || v.columnWidths.some(n => typeof n !== 'number' || !Number.isFinite(n) || n <= 0) || Math.abs(v.columnWidths.reduce((a, b) => a + b, 0) - 100) > .01)) fail(`${path}.columnWidths`, '列宽需要为正百分比，数量匹配表头且合计为 100');
+  if (v.mode === 'task-list' && (v.columns.length !== 3 || v.rows.length < 3 || v.rows.length > 5)) fail(path, 'task-list 需要序号、模块、说明三列及 3–5 行');
+}
+
+function diagram(v, path) {
+  object(v, path); text(v.title, `${path}.title`);
+  if (!['flow', 'matrix'].includes(v.type)) fail(`${path}.type`, '使用 flow / matrix');
+  list(v.items, `${path}.items`, v.type === 'flow' ? 4 : 6);
+  if (v.items.length < 2) fail(`${path}.items`, '至少需要两个信息节点');
+  v.items.forEach((item, i) => { object(item, `${path}.items[${i}]`); text(item.label, `${path}.items[${i}].label`); text(item.detail, `${path}.items[${i}].detail`, true); });
+  if (v.focus !== undefined && (!Number.isInteger(v.focus) || v.focus < 0 || v.focus >= v.items.length)) fail(`${path}.focus`, '必须是 items 内的零基索引');
+  if (v.direction !== undefined && (v.type !== 'flow' || !['horizontal', 'vertical'].includes(v.direction))) fail(`${path}.direction`, '仅 flow 支持 horizontal / vertical');
+  if (v.columns !== undefined && (v.type !== 'matrix' || ![2, 3].includes(v.columns))) fail(`${path}.columns`, '仅 matrix 支持 2 或 3 列');
+}
+
 export function validateDeck(deck) {
   object(deck, 'deck'); text(deck.title, 'deck.title'); list(deck.slides, 'deck.slides', 200);
   if (deck.lang !== undefined && !['zh-CN', 'en'].includes(deck.lang)) fail('deck.lang', '使用 zh-CN 或 en');
@@ -51,6 +81,13 @@ export function validateDeck(deck) {
     object(s, p); text(s.title, `${p}.title`);
     if (s.lang !== undefined && !['zh-CN', 'en'].includes(s.lang)) fail(`${p}.lang`, '使用 zh-CN 或 en');
     for (const key of ['source', 'notes', 'lead']) text(s[key], `${p}.${key}`, true);
+    text(s.visualExemption, `${p}.visualExemption`, true);
+    if (s.visualTextBinding !== undefined) {
+      object(s.visualTextBinding, `${p}.visualTextBinding`);
+      for (const key of ['supportsClaim', 'textAnchor', 'informationCarried']) text(s.visualTextBinding[key], `${p}.visualTextBinding.${key}`);
+      for (const key of ['visualType', 'sourceOrGeneration', 'whyThisVisual']) text(s.visualTextBinding[key], `${p}.visualTextBinding.${key}`, true);
+    }
+    if (s.visualExemption && s.visualTextBinding) fail(p, 'visualExemption 与 visualTextBinding 不能同时声明');
     if (s.source !== undefined && ['cover', 'agenda', 'closing'].includes(s.layout)) fail(`${p}.source`, '本版式没有来源区域，请放到正文页');
     switch (s.layout) {
       case 'cover':
@@ -65,19 +102,16 @@ export function validateDeck(deck) {
         object(s.left, `${p}.left`); strings(s.left.paragraphs, `${p}.left.paragraphs`, 8);
         text(s.left.heading, `${p}.left.heading`, true);
         object(s.right, `${p}.right`); text(s.right.heading, `${p}.right.heading`, true);
-        if (['paragraphs', 'chart', 'image'].filter(k => s.right[k] !== undefined).length !== 1) fail(`${p}.right`, 'paragraphs / chart / image 必须选一个');
+        if (['paragraphs', 'chart', 'image', 'table', 'diagram'].filter(k => s.right[k] !== undefined).length !== 1) fail(`${p}.right`, 'paragraphs / chart / image / table / diagram 必须选一个');
         if (s.right.paragraphs) strings(s.right.paragraphs, `${p}.right.paragraphs`, 8);
         if (s.right.chart) chart(s.right.chart, `${p}.right.chart`);
         if (s.right.image) picture(s.right.image, `${p}.right.image`);
+        if (s.right.table) table(s.right.table, `${p}.right.table`);
+        if (s.right.diagram) diagram(s.right.diagram, `${p}.right.diagram`);
         break;
       case 'chart': chart(s.chart, `${p}.chart`); break;
-      case 'table':
-        object(s.table, `${p}.table`); strings(s.table.columns, `${p}.table.columns`, 10);
-        text(s.table.title, `${p}.table.title`, true); list(s.table.rows, `${p}.table.rows`, 15);
-        s.table.rows.forEach((row, j) => {
-          if (!Array.isArray(row) || row.length !== s.table.columns.length || row.some(x => typeof x !== 'string' && !(typeof x === 'number' && Number.isFinite(x)))) fail(`${p}.table.rows[${j}]`, '单元格数须匹配表头，值为文字或有限数值');
-        });
-        break;
+      case 'table': table(s.table, `${p}.table`); break;
+      case 'diagram': diagram(s.diagram, `${p}.diagram`); break;
       case 'image': picture(s.image, `${p}.image`); break;
       case 'closing': if (s.contact !== undefined) strings(s.contact, `${p}.contact`, 4); break;
       default: fail(`${p}.layout`, `不支持 ${JSON.stringify(s.layout)}`);

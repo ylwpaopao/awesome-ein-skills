@@ -29,13 +29,14 @@
         "封面的山水图、双色底栏与标志沿用原稿，标题、报告人和日期可以替换。",
         "正文保持原始标题条、页脚线和保密提示；文字过多时精简或拆页。",
         "本演示中的图表数据仅用于验证版式，不代表实际业务表现。"
-      ]
+      ],
+      "visualExemption": "本页演示 text 布局的完整模板说明；正式报告普通正文改用证据或关系视觉。"
     },
     {
       "layout": "two-column",
       "title": "用左文右图解释数据",
       "left": {
-        "heading": "示例：完成数量逐步增加",
+        "heading": "完成数量逐步增加",
         "paragraphs": [
           "用左侧文字说明图表反映的变化，并交代数据口径。",
           "右侧图表保持品牌配色，坐标从零起始，明确单位。"
@@ -65,7 +66,12 @@
           "unit": "项"
         }
       },
-      "source": "来源：合成示例数据，仅用于演示排版"
+      "source": "来源：合成示例数据，仅用于演示排版",
+      "visualTextBinding": {
+        "supportsClaim": "用左文右图解释数据",
+        "textAnchor": "用左文右图解释数据",
+        "informationCarried": "用季度柱高比较完成数量的变化"
+      }
     },
     {
       "layout": "chart",
@@ -108,7 +114,12 @@
         ],
         "unit": "分"
       },
-      "source": "来源：合成示例数据，仅用于演示排版"
+      "source": "来源：合成示例数据，仅用于演示排版",
+      "visualTextBinding": {
+        "supportsClaim": "折线图呈现连续变化",
+        "textAnchor": "折线图呈现连续变化",
+        "informationCarried": "展示各阶段或类别的同口径数值对比"
+      }
     },
     {
       "layout": "table",
@@ -146,28 +157,52 @@
             "离线 HTML",
             "键盘翻页与打印分页"
           ]
-        ]
+        ],
+        "mode": "compact-comparison"
       },
-      "source": "说明：本表为流程示例"
+      "source": "说明：本表为流程示例",
+      "visualTextBinding": {
+        "supportsClaim": "用表格对齐任务与交付",
+        "textAnchor": "用表格对齐任务与交付",
+        "informationCarried": "按行列呈现任务、输入、输出与检查重点"
+      }
     },
     {
       "layout": "two-column",
-      "title": "双栏适合并列说明",
+      "title": "页面按制作与复核顺序交付",
       "left": {
-        "heading": "内容准备",
+        "heading": "先验证再转换",
         "paragraphs": [
-          "先明确受众和本次演示的结论。",
-          "为图表补齐数据口径、单位与来源。",
-          "提供需要保留的图片和文字。"
+          "内容与版式先在 HTML 中完成，检查字体、间距和逐页截图。",
+          "PDF 和 PPTX 均来自同一份已完成的 HTML，修改时回到源内容。"
         ]
       },
       "right": {
-        "heading": "页面检查",
-        "paragraphs": [
-          "确保标题、正文和标注完整显示。",
-          "逐页核对图片、页脚和数据。",
-          "在演示设备上确认字体与翻页。"
-        ]
+        "diagram": {
+          "type": "flow",
+          "title": "交付流程",
+          "direction": "vertical",
+          "items": [
+            {
+              "label": "整理材料",
+              "detail": "核实结论与证据"
+            },
+            {
+              "label": "完成 HTML",
+              "detail": "构建、检查和逐页修订"
+            },
+            {
+              "label": "导出交付",
+              "detail": "按需生成 PDF 或 PPTX"
+            }
+          ]
+        }
+      },
+      "source": "说明：本技能的制作与交付流程示意",
+      "visualTextBinding": {
+        "supportsClaim": "页面按制作与复核顺序交付",
+        "textAnchor": "页面按制作与复核顺序交付",
+        "informationCarried": "用真实制作顺序连接材料、HTML和导出交付"
       }
     },
     {
@@ -177,7 +212,98 @@
         "src": "template-reference.png",
         "alt": "原稿第2页：左侧标题与报告信息、右侧山水、底部双色栏和易方达标志"
       },
-      "source": "来源：易方达ppt模板V5，第2页；用于对照品牌版式"
+      "source": "来源：易方达ppt模板V5，第2页；用于对照品牌版式",
+      "visualTextBinding": {
+        "supportsClaim": "原始封面的版式参考",
+        "textAnchor": "原始封面的版式参考",
+        "informationCarried": "对照原稿确认山水图、题名槽和底栏的真实位置"
+      }
+    },
+    {
+      "layout": "two-column",
+      "title": "比较表突出同口径的差异",
+      "left": {
+        "heading": "同一维度比较",
+        "paragraphs": [
+          "先核对单位与统计口径，再选择需要强调的关键行。",
+          "本页数量是合成排版数据，不代表业务表现。"
+        ]
+      },
+      "right": {
+        "table": {
+          "title": "方案比较（示例）",
+          "mode": "row-highlight",
+          "columns": [
+            "方案",
+            "耗时（分钟）",
+            "完成数（项）"
+          ],
+          "rows": [
+            [
+              "甲",
+              24,
+              12
+            ],
+            [
+              "乙",
+              18,
+              16
+            ],
+            [
+              "丙",
+              21,
+              14
+            ]
+          ],
+          "numericColumns": [
+            1,
+            2
+          ],
+          "highlightRows": [
+            1
+          ]
+        }
+      },
+      "source": "来源：合成示例数据，仅用于演示排版",
+      "visualTextBinding": {
+        "supportsClaim": "比较表突出同口径的差异",
+        "textAnchor": "比较表突出同口径的差异",
+        "informationCarried": "按相同列比较三方案，强调乙方案的合成示例行"
+      }
+    },
+    {
+      "layout": "diagram",
+      "title": "交付检查覆盖四类问题",
+      "diagram": {
+        "type": "matrix",
+        "title": "各项检查并列执行",
+        "columns": 2,
+        "focus": 1,
+        "items": [
+          {
+            "label": "内容与证据",
+            "detail": "核对结论、数据和来源"
+          },
+          {
+            "label": "版式与可读性",
+            "detail": "核对真实换行、间距和留白"
+          },
+          {
+            "label": "隐私与素材",
+            "detail": "检查图片、备注和交付范围"
+          },
+          {
+            "label": "格式与打开",
+            "detail": "核对页数、尺寸和实际打开"
+          }
+        ]
+      },
+      "source": "说明：本技能的交付检查项目",
+      "visualTextBinding": {
+        "supportsClaim": "交付检查覆盖四类问题",
+        "textAnchor": "交付检查覆盖四类问题",
+        "informationCarried": "表示四项并列检查，不暗示因果关系"
+      }
     },
     {
       "layout": "closing",

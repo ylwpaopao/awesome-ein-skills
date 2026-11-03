@@ -1,9 +1,9 @@
 @layer reset, brand, content, player, modes;
 @layer reset {
   :where(html, body) { margin: 0; padding: 0; }
-  :where(h1, h2, h3, p, figure, ol) { margin: 0; }
+  :where(h1, h2, h3, p, figure, ol, ul) { margin: 0; }
   :where(button, table) { font: inherit; }
-  :where(.slide, .slide div, .slide h2, .slide h3, .slide p, .slide figure, .slide table, .slide th, .slide td, .slide ol, .slide li) { box-sizing: border-box; }
+  :where(.slide, .slide div, .slide h2, .slide h3, .slide p, .slide figure, .slide table, .slide th, .slide td, .slide ol, .slide ul, .slide li) { box-sizing: border-box; }
 }
 @layer brand {
   :root { --blue: #005096; --medium-blue: #0078B4; --cyan: #1EB9E1; --ink: #3C3C3C; --gray: #969696; --paper: #fff; --scale: 1; }
@@ -37,10 +37,12 @@
   .agenda-label { padding-left: 9.6px; max-height: 54px; transform: translateY(2.2px); }
   .agenda-list.has-active li:not(.agenda-active) .agenda-label { color: #ccc; }
   .columns { position: absolute; left: 38.67px; top: 120px; width: 884px; height: 338px; display: grid; grid-template-columns: 410px 434px; gap: 40px; }
+  .columns.evidence-columns { grid-template-columns: minmax(0, 38fr) minmax(0, 62fr); gap: 32px; }
   .narrative, .visual-column { min-width: 0; height: 338px; font-size: 16px; line-height: 1.5; }
   .narrative p + p, .visual-column p + p { margin-top: 16px; }
+  .standard-visual-title { font-size: 13.3333px; font-weight: 400; line-height: 20px; margin-bottom: 16px; text-align: left; }
   .content-panel { position: absolute; left: 38.67px; top: 116px; width: 884px; height: 342px; }
-  .lead { font-size: 20px; line-height: 1.5; margin-bottom: 12px; }
+  .lead { font-size: 20px; line-height: 1.5; margin-bottom: 16px; }
   .chart-figure { height: 100%; width: 100%; }
   .chart-figure figcaption, .data-table caption { color: var(--blue); text-align: center; font-size: 13.3333px; line-height: 20px; font-weight: 400; }
   .chart-legend { display: flex; justify-content: center; gap: 14px; height: 22px; font-size: 11px; line-height: 22px; white-space: nowrap; }
@@ -49,21 +51,47 @@
   .data-chart { display: block; width: 100%; overflow: visible; }
   .data-chart text { fill: var(--ink); font-size: 11px; font-family: EFundLatin, EFund, sans-serif; }
   .data-chart .chart-value { font-size: 11px; }
-  .has-lead > .chart-figure { height: calc(100% - 42px); }
+  .has-lead > .chart-figure { height: calc(100% - 46px); }
   .data-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 16px; line-height: 1.4; }
-  .data-table caption { padding-bottom: 12px; }
+  .data-table caption { padding-bottom: 16px; }
+  .table-panel > .data-table > caption:not(.visually-hidden) { font-size: 18.6667px; line-height: 28px; text-align: left; }
   .data-table :where(th, td) { padding: 9px 12px; text-align: left; overflow-wrap: anywhere; }
   .data-table thead { color: white; background: var(--cyan); }
+  .data-table thead th { text-align: center; font-weight: 700; }
   .data-table tbody th { font-weight: 400; }
   .data-table tbody tr:nth-child(odd) { background: #f2f2f2; }
   .data-table tbody td { font-variant-numeric: tabular-nums; }
+  .data-table tbody .numeric-column { text-align: right; font-variant-numeric: tabular-nums; }
+  .data-table :where(th, td) { border: 0; }
+  .data-table:not(.table-striped) { font-size: 14.6667px; line-height: 1.5; }
+  .table-row-highlight tbody tr:nth-child(odd), .table-task-list tbody tr:nth-child(odd) { background: white; }
+  .data-table tbody tr.subtotal-row { background: #e8e8e8; }
+  .data-table tbody tr.highlight-row { background: var(--cyan); color: white; }
+  .data-table tbody tr.highlight-row :where(th, td) { font-weight: 700; }
+  .table-task-list th:first-child, .table-task-list td:first-child { width: 10%; }
+  .table-task-list th:nth-child(2) { width: 22%; }
+  .table-task-list tbody tr + tr { border-top: .6667px solid #ccc; }
+  .table-task-list tbody td:first-child { color: var(--cyan); font-size: 29.3333px; line-height: 1.2; text-align: left; font-weight: 700; }
   .image-figure { height: 100%; width: 100%; }
   .content-image { width: 100%; height: 100%; display: block; }
   .fit-contain { object-fit: contain; }
   .fit-cover { object-fit: cover; }
-  .has-lead > .image-figure { height: calc(100% - 42px); }
-  .visual-column:has(h3) .image-figure { height: calc(100% - 42px); }
-  .visual-column:has(h3) .chart-figure { height: calc(100% - 42px); }
+  .has-lead > .image-figure { height: calc(100% - 46px); }
+  .visual-column:has(> h3) > :is(.image-figure, .chart-figure, .diagram-figure) { height: calc(100% - 36px); }
+  .diagram-figure { height: 100%; display: flex; flex-direction: column; justify-content: center; }
+  .diagram-title { flex: none; margin-bottom: 16px; font-size: 13.3333px; line-height: 20px; font-weight: 400; color: var(--blue); text-align: center; }
+  .diagram { flex: 0 0 auto; min-height: 0; display: grid; grid-template-columns: repeat(var(--diagram-columns), minmax(0, 1fr)); align-content: center; gap: 12px; padding: 0; list-style: none; }
+  .diagram-node { position: relative; padding: 12px; min-width: 0; background: #eaf5fa; }
+  .diagram-label { margin: 0; color: var(--blue); font-size: 16px; line-height: 24px; font-weight: 700; text-align: left; }
+  .diagram-detail { margin-top: 4px; color: var(--ink); font-size: 13.3333px; line-height: 20px; text-align: left; }
+  .diagram-focus { background: var(--blue); }
+  .diagram-focus :is(.diagram-label, .diagram-detail) { color: white; }
+  .diagram-flow { gap: 32px; align-items: stretch; }
+  .diagram-flow .diagram-node { padding: 10px; }
+  .diagram-connector { position: absolute; width: 32px; height: 12px; right: -32px; top: calc(50% - 6px); color: var(--medium-blue); }
+  .flow-vertical { grid-template-columns: minmax(0, 1fr); gap: 24px; max-width: 380px; align-self: center; width: 100%; }
+  .flow-vertical .diagram-connector { top: auto; bottom: -18px; left: calc(50% - 12px); right: auto; width: 24px; height: 12px; transform: rotate(90deg); }
+  .has-lead > .diagram-figure { height: calc(100% - 46px); }
   .visually-hidden { position: absolute; top: 0; left: 0; clip-path: inset(50%); overflow: hidden; width: 1px; height: 1px; white-space: nowrap; }
 }
 @layer player {

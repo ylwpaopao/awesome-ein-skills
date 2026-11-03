@@ -1,2 +1,6 @@
 /output/
 /qa/
+/node_modules/
+.DS_Store
+# User-supplied native-PPT skill is a local development reference, not a runtime dependency.
+/material/efund-ppt-maker/

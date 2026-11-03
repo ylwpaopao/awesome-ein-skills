@@ -5,9 +5,13 @@
   "scripts": {
     "test": "bun test tests/",
     "build": "bun scripts/build.mjs",
-    "check": "bun scripts/check.mjs"
+    "check": "bun scripts/check.mjs",
+    "export": "bun scripts/export.mjs"
   },
   "devDependencies": {
-    "playwright": "1.62.1"
+    "jszip": "3.10.1",
+    "pdf-lib": "1.17.1",
+    "playwright": "1.62.1",
+    "pptxgenjs": "4.0.1"
   }
 }

@@ -62,6 +62,56 @@
     } finally { root.classList.remove('measuring'); }
     return issues;
   }
+  // Read the browser's laid-out glyph rectangles, never estimate lines by character count.
+  function measureReadability() {
+    const textLayout = [], issues = [];
+    root.classList.add('measuring');
+    try {
+      slides.forEach((slide, slideIndex) => {
+        const bounds = slide.getBoundingClientRect();
+        const targets = slide.querySelectorAll('h2,h3,p,figcaption,caption,th,td,.agenda-label,[data-readability]');
+        for (const element of targets) {
+          if (element.closest('[hidden],.visually-hidden') || element.classList.contains('source')) continue;
+          const rows = [], walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+          let node;
+          while ((node = walker.nextNode())) {
+            let offset = 0;
+            for (const char of node.textContent) {
+              const range = document.createRange();
+              range.setStart(node, offset); offset += char.length; range.setEnd(node, offset);
+              const box = range.getBoundingClientRect();
+              if (box.width === 0 || box.height === 0) continue;
+              let row = rows.find(r => Math.min(r.bottom, box.bottom) - Math.max(r.top, box.top) > Math.min(r.bottom - r.top, box.height) * .5);
+              if (!row) { row = { text: '', top: box.top, bottom: box.bottom }; rows.push(row); }
+              row.text += char; row.top = Math.min(row.top, box.top); row.bottom = Math.max(row.bottom, box.bottom);
+            }
+          }
+          rows.sort((a, b) => a.top - b.top);
+          const lines = rows.map(r => r.text.trim()).filter(Boolean);
+          if (!lines.length) continue;
+          const record = { slide: slideIndex + 1, element: element.className || element.tagName.toLowerCase(), source: 'rendered', lineCount: lines.length, lines };
+          textLayout.push(record);
+          if (lines.length > 1 && lines.some(line => /^[\p{P}\s]*\p{Script=Han}[\p{P}\s]*$/u.test(line))) issues.push({ slide: slideIndex + 1, element: record.element, type: 'single-han-line', lines });
+          const next = element.nextElementSibling;
+          if (element.matches('h3,.lead') && next?.matches('figure,table,.diagram')) {
+            const gap = next.getBoundingClientRect().top - Math.max(...rows.map(r => r.bottom));
+            if (gap < 15.5) issues.push({ slide: slideIndex + 1, element: record.element, type: 'text-graphic-spacing', gap: Math.round(gap * 10) / 10, minimum: 16 });
+          }
+          if (!['cover', 'closing', 'agenda'].includes(slide.dataset.layout) && !element.matches('.slide-title') && Math.max(...rows.map(r => r.bottom)) - bounds.top > 488) issues.push({ slide: slideIndex + 1, element: record.element, type: 'text-footer-clearance' });
+        }
+        const title = slide.querySelector('.slide-title');
+        if (title && getComputedStyle(title).color !== 'rgb(255, 255, 255)') issues.push({slide: slideIndex + 1, type: 'title-color'});
+        for (const element of slide.querySelectorAll('*')) {
+          const style = getComputedStyle(element);
+          if (style.textShadow !== 'none' || style.boxShadow !== 'none') {
+            issues.push({slide: slideIndex + 1, element: element.className || element.tagName, type: 'shadow'});
+            break;
+          }
+        }
+      });
+    } finally { root.classList.remove('measuring'); }
+    return { textLayout, issues };
+  }
   buttons.previous.addEventListener('click', () => goTo(index - 1));
   buttons.next.addEventListener('click', () => goTo(index + 1));
   buttons.overview.addEventListener('click', toggleOverview);
@@ -93,7 +143,7 @@
     resize();
     return true;
   });
-  window.efund = {ready, goTo, get currentIndex() { return index; }, checkOverflow};
+  window.efund = {ready, goTo, get currentIndex() { return index; }, checkOverflow, measureReadability};
   resize();
   goTo(Number(location.hash.slice(1)) - 1, false);
 })();

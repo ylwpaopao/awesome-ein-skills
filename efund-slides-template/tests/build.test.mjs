@@ -21,6 +21,33 @@ test('rejects table width mismatches and ambiguous two-column content', () => {
   expect(() => validateDeck(deck([{ layout: 'table', title: '表', table: { columns: ['甲'], rows: [[1, 2]] } }]))).toThrow('单元格数');
   expect(() => validateDeck(deck([{ layout: 'two-column', title: '说明', left: { paragraphs: ['一'] }, right: { paragraphs: ['二'], chart } }]))).toThrow('必须选一个');
 });
+test('rejects misleading table highlights, impossible widths, and unrelated flow options', () => {
+  const table = { columns: ['方案', '时长'], rows: [['甲', 2], ['乙', 3], ['丙', 4]] };
+  for (const extra of [{ highlightRows: [0, 1, 2] }, { numericColumns: [2] }, { subtotalRows: [1, 1] }, { columnWidths: [30, 60] }]) {
+    expect(() => validateDeck(deck([{ layout: 'table', title: '比较', table: { ...table, ...extra } }]))).toThrow();
+  }
+  expect(() => validateDeck(deck([{ layout: 'table', title: '清单', table: { ...table, mode: 'task-list' } }]))).toThrow('三列');
+  const diagram = { type: 'matrix', title: '职责', items: [{ label: '审阅' }, { label: '复核' }] };
+  expect(() => validateDeck(deck([{ layout: 'diagram', title: '职责', diagram: { ...diagram, direction: 'horizontal' } }]))).toThrow('仅 flow');
+  expect(() => validateDeck(deck([{ layout: 'diagram', title: '职责', diagram: { ...diagram, focus: 2 } }]))).toThrow('零基索引');
+});
+test('evidence layouts retain semantic tables, ordered relationships, and escaped review metadata', () => {
+  const binding = { supportsClaim: '<数据支持判断>', textAnchor: '左侧说明', informationCarried: '方案时长差异' };
+  const input = deck([
+    { layout: 'two-column', title: '方案比较', left: { paragraphs: ['甲方案耗时更少。'] }, right: { table: { columns: ['方案', '时长'], rows: [['甲', 2], ['乙', 3]], mode: 'row-highlight', highlightRows: [0], columnWidths: [60, 40] } }, visualTextBinding: binding },
+    { layout: 'diagram', title: '审阅顺序', diagram: { type: 'flow', title: '材料经两步审阅后交付', items: [{ label: '审阅' }, { label: '复核' }] } },
+    { layout: 'diagram', title: '职责分工', diagram: { type: 'matrix', title: '两项独立职责', items: [{ label: '材料核实' }, { label: '视觉复核' }] } },
+  ]);
+  validateDeck(input);
+  const html = renderDeck(input, { backgrounds: { content: '' }, font: 'data:font/woff2;base64,', latinFonts: { regular: '', bold: '' }, width: 960, height: 540.5, css: '', player: '' });
+  expect(html).toContain('data-visual-text-binding="{&quot;supportsClaim&quot;:&quot;&lt;数据支持判断&gt;');
+  expect(html).toContain('<th scope="row" data-readability>甲</th><td class="numeric-column"');
+  expect(html).toContain('<caption class="visually-hidden">方案比较</caption>');
+  expect(html).toContain('<ol class="diagram diagram-flow');
+  expect(html).toContain('<ul class="diagram diagram-matrix');
+  expect((html.match(/<svg class="diagram-connector"/g) ?? []).length).toBe(1);
+  expect(() => validateDeck(deck([{ ...input.slides[0], visualTextBinding: { supportsClaim: '缺少锚点与信息' } }]))).toThrow('textAnchor');
+});
 test('rejects unrenderable magnitudes and footer text on brand-only layouts', () => {
   for (const values of [[1e308, -1e308], [1e-320, 2e-320]]) expect(() => validateDeck(deck([{ layout: 'chart', title: '结论', chart: { ...chart, series: [{ name: '组', values }] } }]))).toThrow('转换单位');
   expect(() => validateDeck(deck([{ layout: 'cover', title: '标题', source: '不应压在品牌声明上' }]))).toThrow('没有来源区域');
