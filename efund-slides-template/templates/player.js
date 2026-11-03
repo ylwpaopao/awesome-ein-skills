@@ -80,10 +80,14 @@
   window.addEventListener('resize', resize);
   window.addEventListener('hashchange', () => goTo(Number(location.hash.slice(1)) - 1, false));
   const ready = Promise.all([
+    document.fonts.load('400 16px EFund', '易方达'),
+    document.fonts.load('400 16px EFundLatin', 'Arial 0123'),
+    document.fonts.load('700 16px EFundLatin', 'Arial 0123'),
     document.fonts.ready,
     ...[...document.images].map(img => img.decode().catch(() => { throw new Error(`Image could not be decoded: ${img.alt || img.className}`); }))
   ]).then(() => {
     if (!document.fonts.check('16px EFund', '易方达')) throw new Error('The EFund font did not load.');
+    if (!document.fonts.check('400 16px EFundLatin', 'Arial 0123') || !document.fonts.check('700 16px EFundLatin', 'Arial 0123')) throw new Error('The bundled Latin fonts did not load.');
     goTo(Number(location.hash.slice(1)) - 1, false);
     buttons.overview.setAttribute('aria-pressed', String(overview));
     resize();

@@ -13,11 +13,11 @@
 
 转换器删除所选页自身的示例内容、布局占位符和原页码，保留布局上的固定家具。经 LibreOffice 渲染到 PDF 后，以内嵌图片和文字路径的 SVG 保存品牌底板；声明因此固定显示，不依赖使用者的系统字体。新标题、正文、表格和图表在上层以 HTML/SVG 生成，页码动态生成。它是原稿品牌模板的转换与内容版式实现，不是支持所有 PowerPoint 对象的通用转换器。
 
-中文正文使用“华文黑体_易方达”，英文/数字按相应版式使用 Arial。中文封面标题28pt、副标题22pt；英文封面按实际对象使用28pt/18pt；标题栏23pt加粗；正文使用15pt或12pt；图表标题10pt；来源7pt。颜色取自原稿：深蓝 `#005096`、蓝 `#0078B4`、青 `#1EB9E1`、深灰 `#3C3C3C`。页脚线 y=496.53，正文和来源须在其上方留出空间。
+中文正文使用“华文黑体_易方达”，英文/数字按相应版式使用 Arial。三份 WOFF2（中文、Arial 常规、Arial 粗体）随技能分发并内嵌 HTML；CSS 使用 EFund / EFundLatin 专有名称，避免读取不同电脑的同名字体。中文粗体仍由浏览器合成，不同浏览器的栅格化细节可能有差异。中文封面标题28pt、副标题22pt；英文封面按实际对象使用28pt/18pt；标题栏23pt加粗；正文使用15pt或12pt；图表标题10pt；来源7pt。颜色取自原稿：深蓝 `#005096`、蓝 `#0078B4`、青 `#1EB9E1`、深灰 `#3C3C3C`。页脚线 y=496.53，正文和来源须在其上方留出空间。
 
 ## 重新提取
 
-常规生成不需要 LibreOffice。重建底板才需要 `uv`、LibreOffice，以及用户可用的易方达字体。macOS 的 LibreOffice 可由 `brew install --cask libreoffice` 安装；依赖版本已在转换脚本的 PEP 723 元数据中固定。
+常规生成只需 Bun，检查和 PDF 导出另需 Playwright 与 Chrome/Chromium。重建底板才需要 `uv`、LibreOffice，以及用户可用的源字体。macOS 的 LibreOffice 可由 `brew install --cask libreoffice` 安装；依赖版本已在转换脚本的 PEP 723 元数据中固定。
 
 在技能目录运行：
 
@@ -25,8 +25,12 @@
 uv run scripts/convert_template.py --font /path/to/STHeiti_YFD.ttf
 ```
 
-可用 `--source` 和 `--out` 指定输入/输出。更换源 PPT 后须检查页码和布局映射；转换器只支持当前 V5 结构。字体完整文件放在本机忽略目录 `assets/fonts/`，不纳入 Git。转换脚本记录字体哈希以便核对，但不表示取得字体再分发许可。
+可用 `--source` 和 `--out` 指定输入/输出。更换源 PPT 后须检查页码和布局映射；转换器只支持当前 V5 结构。`assets/fonts/` 中保存完整字符集的网页字体；`font-manifest.json`、`latin-font-manifest.json` 记录源字体和产物哈希，便于核对。
 
-仅准备本机字体缓存时加 `--font-only`，不需要 LibreOffice。原字体的 `vhea` 版本字段不符合浏览器校验；转换只在副本中规范该字段，保留字形与度量。构建器使用外部字体时会自动完成这一步。
+仅更新中文网页字体时加 `--font-only`，不需要 LibreOffice。原字体的 `vhea` 版本字段不符合浏览器校验；转换只在副本中规范该字段，保留字形与度量。构建器使用外部字体时会自动完成这一步。更新拉丁字体时运行：
+
+```bash
+uv run scripts/prepare_latin_fonts.py --regular /path/to/Arial.ttf --bold /path/to/Arial-Bold.ttf
+```
 
 转换使用隔离 LibreOffice profile 和字体配置，避免默认 Fontconfig 漏字。先查看正确渲染的原稿，再核对网页；不能把“命令成功”当成中文字体或画面已正确。LibreOffice 与 PowerPoint 的文字栅格化、行高可能有差异，网页版需要逐页对照，不能声称所有像素完全一致。

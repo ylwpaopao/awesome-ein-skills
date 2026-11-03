@@ -100,6 +100,6 @@
     "method": "Retain slide-layout brand furniture; remove slide content, placeholders and page-number fields; render PDF to embedded SVG paths.",
     "rebuild": "uv run scripts/convert_template.py --font /path/to/STHeiti_YFD.ttf",
     "notes": "SVGs contain fixed brand artwork only. The full character-set WOFF2 supplies editable HTML text. PDF rendering can differ from Microsoft PowerPoint rasterization.",
-    "fontInput": "The font is supplied separately by the user when rebuilding; this manifest records its digest, not a redistribution license."
+    "fontInput": "The browser-compatible E Fund WOFF2 is bundled in assets/fonts; rebuilding it requires the original font input."
   }
 }

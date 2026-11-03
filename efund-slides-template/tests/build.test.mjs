@@ -1,7 +1,7 @@
 import { test, expect } from 'bun:test';
-import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, writeFile, rm, cp, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { validateDeck, embedPicture, build } from '../scripts/build.mjs';
 import { renderDeck } from '../scripts/render.mjs';
 
@@ -27,10 +27,24 @@ test('rejects unrenderable magnitudes and footer text on brand-only layouts', ()
 });
 test('small nonzero chart values remain nonzero in visible SVG labels', () => {
   const values = [0.000001, 0.000002];
-  const html = renderDeck(deck([{ layout: 'chart', title: '小数', chart: { ...chart, series: [{ name: '组', values }] } }]), { backgrounds: { content: '' }, font: 'data:font/woff2;base64,', width: 960, height: 540.5, css: '', player: '' });
+  const html = renderDeck(deck([{ layout: 'chart', title: '小数', chart: { ...chart, series: [{ name: '组', values }] } }]), { backgrounds: { content: '' }, font: 'data:font/woff2;base64,', latinFonts: {regular: '', bold: ''}, width: 960, height: 540.5, css: '', player: '' });
   const labels = [...html.matchAll(/class="chart-value">([^<]+)<\/text>/g)].map(m => Number(m[1]));
   expect(labels).toEqual(values);
   expect(html).not.toMatch(/(?:NaN|Infinity)/);
+});
+test('a copied skill builds identical HTML without home, environment fonts or Python', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'efund-portable-'));
+  const root = resolve(import.meta.dir, '..');
+  try {
+    for (const name of ['assets', 'templates', 'examples']) await cp(join(root, name), join(dir, name), { recursive: true });
+    await mkdir(join(dir, 'scripts'));
+    for (const name of ['build.mjs', 'render.mjs']) await cp(join(root, 'scripts', name), join(dir, 'scripts', name));
+    const local = join(dir, 'local.html'), portable = join(dir, 'portable.html');
+    await build({ input: join(root, 'examples/demo.json'), output: local });
+    const child = Bun.spawnSync({ cmd: [process.execPath, join(dir, 'scripts/build.mjs'), '--input', join(dir, 'examples/demo.json'), '--output', portable], env: {}, cwd: dir });
+    expect(child.exitCode, child.stderr.toString()).toBe(0);
+    expect(await readFile(portable, 'utf8')).toBe(await readFile(local, 'utf8'));
+  } finally { await rm(dir, { recursive: true, force: true }); }
 });
 test('never fetches remote images or embeds active SVG content', async () => {
   for (const src of ['https://example.com/image.png', 'javascript:alert(1)', 'data:image/svg+xml,<svg onload="alert(1)"/>']) {

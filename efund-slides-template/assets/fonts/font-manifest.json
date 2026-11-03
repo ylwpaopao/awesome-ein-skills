@@ -1,0 +1,18 @@
+{
+  "file": "fonts/efund.woff2",
+  "names": [
+    "STHeiti_YFD",
+    "华文黑体_易方达"
+  ],
+  "sourceSha256": "c371bf3656aefdec1a056b461c8c9ef6d1b367105eb6cedcb23ade7687de5e92",
+  "sha256": "432581bce8bff5e0c2debbaaf1b480334c4cc2cc5e30be64434f28ef34bc1456",
+  "characterCount": 31252,
+  "normalizations": [
+    {
+      "table": "vhea",
+      "field": "tableVersion",
+      "from": "0x00010001",
+      "to": "0x00010000"
+    }
+  ]
+}

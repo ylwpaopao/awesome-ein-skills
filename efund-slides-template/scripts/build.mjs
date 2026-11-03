@@ -133,8 +133,10 @@ export async function build({ input, output, font, force = false }) {
   const manifest = JSON.parse(await readFile(resolve(ROOT, 'assets/template-manifest.json'), 'utf8'));
   const backgrounds = {};
   for (const name of ['cover-cn', 'cover-en', 'toc', 'content', 'ending-cn', 'ending-en']) backgrounds[name] = uri(await readFile(resolve(ROOT, `assets/backgrounds/${name}.svg`)), 'image/svg+xml');
+  const latinFonts = {};
+  for (const weight of ['regular', 'bold']) latinFonts[weight] = uri(await readFile(resolve(ROOT, `assets/fonts/arial-${weight}.woff2`)), 'font/woff2');
   const html = renderDeck(deck, {
-    backgrounds, font: await readFont(font), width: manifest.canvas.px.width, height: manifest.canvas.px.height,
+    backgrounds, font: await readFont(font), latinFonts, width: manifest.canvas.px.width, height: manifest.canvas.px.height,
     css: await readFile(resolve(ROOT, 'templates/slides.css'), 'utf8'),
     player: await readFile(resolve(ROOT, 'templates/player.js'), 'utf8'),
   });

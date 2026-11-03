@@ -19,7 +19,7 @@ export async function check({ input, out, pdf = false, browser: executablePath, 
     await page.evaluate(async () => { if (!window.efund) throw new Error('缺少 efund 播放器'); await window.efund.ready; });
     const state = await page.evaluate(() => ({
       count: document.querySelectorAll('.slide').length,
-      fonts: [...document.fonts].map(f => ({ family: f.family, status: f.status })),
+      fonts: [...document.fonts].map(f => ({ family: f.family, weight: f.weight, status: f.status })),
       images: [...document.images].filter(i => !i.complete || !i.naturalWidth).map(i => i.alt || 'background'),
       overflow: window.efund.checkOverflow(),
     }));
@@ -27,6 +27,7 @@ export async function check({ input, out, pdf = false, browser: executablePath, 
     const invalidGeometry = await page.evaluate(() => [...document.querySelectorAll('.data-chart *')].flatMap(el => [...el.attributes].filter(a => /(?:NaN|Infinity)/.test(a.value) && ['x', 'y', 'x1', 'x2', 'y1', 'y2', 'cx', 'cy', 'r', 'width', 'height', 'points', 'd'].includes(a.name)).map(a => `${el.tagName}.${a.name}=${a.value}`)));
     if (invalidGeometry.length) issues.push({ reason: '图表几何数值无效', attributes: invalidGeometry });
     if (!state.fonts.some(f => f.family.replace(/['"]/g, '') === 'EFund' && f.status === 'loaded')) issues.push({ reason: '品牌字体未加载' });
+    for (const weight of ['400', '700']) if (!state.fonts.some(f => f.family.replace(/['"]/g, '') === 'EFundLatin' && f.weight === weight && f.status === 'loaded')) issues.push({ reason: `内嵌拉丁字体 ${weight} 未加载` });
     if (state.images.length) issues.push({ reason: '图片加载失败', images: state.images });
     for (let i = 0; i < state.count; i++) {
       await page.evaluate(n => window.efund.goTo(n), i);

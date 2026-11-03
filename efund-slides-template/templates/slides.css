@@ -7,18 +7,18 @@
 }
 @layer brand {
   :root { --blue: #005096; --medium-blue: #0078B4; --cyan: #1EB9E1; --ink: #3C3C3C; --gray: #969696; --paper: #fff; --scale: 1; }
-  body { background: #20252b; color: var(--ink); font-family: Arial, EFund, sans-serif; }
+  body { background: #20252b; color: var(--ink); font-family: EFundLatin, EFund, sans-serif; }
   .slide { position: relative; isolation: isolate; background: var(--paper); overflow: hidden; flex: none; font-size: 16px; line-height: 1.5; }
   .brand-background { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
   .slide-title { position: absolute; left: 38.1261px; top: 22.2186px; width: 672px; height: 43px; padding-top: 1.9px; color: white; font-size: 30.6667px; line-height: 1.2; font-weight: 700; white-space: nowrap; }
-  .page-number { position: absolute; left: 877.59px; top: 503.09px; width: 47.06px; height: 16px; font: 10.6667px/1.2 Arial, sans-serif; text-align: right; }
+  .page-number { position: absolute; left: 877.59px; top: 503.09px; width: 47.06px; height: 16px; font: 10.6667px/1.2 EFundLatin, sans-serif; text-align: right; }
   .source { position: absolute; left: 38.67px; top: 469px; width: 884px; height: 18px; color: var(--ink); font-size: 9.3333px; line-height: 1.4; white-space: nowrap; }
   .cover-titles { position: absolute; left: 24.1671px; top: 117.9525px; width: 614.2224px; height: 110px; padding: 6px 9.6px; color: var(--blue); }
-  .slide:lang(zh) .cover-titles { font-family: EFund, Arial, sans-serif; }
+  .slide:lang(zh) .cover-titles { font-family: EFund, EFundLatin, sans-serif; }
   .cover-titles h2 { font-size: 37.3333px; line-height: 44px; font-weight: 400; }
   .cover-subtitle { font-size: 29.3333px; line-height: 44px; font-weight: 700; margin-top: 4.6px; }
   .cover-meta { position: absolute; left: 24.1671px; top: 336.8971px; width: 680px; height: 77.55px; padding: 11.5px 9.6px 0; color: var(--blue); font-size: 18.6667px; line-height: 33.6px; white-space: pre-wrap; }
-  .slide:lang(zh) .cover-meta p:first-child { font-family: EFund, Arial, sans-serif; }
+  .slide:lang(zh) .cover-meta p:first-child { font-family: EFund, EFundLatin, sans-serif; }
   .slide:lang(en) .cover-titles { left: 23.0377px; top: 123.5998px; width: 690px; }
   .slide:lang(en) .cover-subtitle { font-size: 24px; }
   .slide:lang(en) .cover-meta { left: 26.426px; top: 340.6822px; }
@@ -33,7 +33,7 @@
   h3 { color: var(--blue); font-size: 20px; line-height: 1.5; font-weight: 700; margin-bottom: 12px; }
   .agenda-list { position: absolute; left: 34px; top: 107.57px; width: 858.71px; height: 392.17px; padding: 0; list-style: none; }
   .agenda-list li { display: grid; grid-template-columns: 125.4805px 1fr; align-items: center; height: 56.0236px; color: var(--blue); font-size: 24px; line-height: 1.35; border-bottom: .6667px dashed #ccc; }
-  .agenda-number { padding-left: 9.6px; color: var(--cyan); font: 700 37.3333px/1.2 Arial, sans-serif; transform: translateY(3.3px); }
+  .agenda-number { padding-left: 9.6px; color: var(--cyan); font: 700 37.3333px/1.2 EFundLatin, sans-serif; transform: translateY(3.3px); }
   .agenda-label { padding-left: 9.6px; max-height: 54px; transform: translateY(2.2px); }
   .agenda-list.has-active li:not(.agenda-active) .agenda-label { color: #ccc; }
   .columns { position: absolute; left: 38.67px; top: 120px; width: 884px; height: 338px; display: grid; grid-template-columns: 410px 434px; gap: 40px; }
@@ -47,7 +47,7 @@
   .chart-legend span { display: inline-flex; align-items: center; gap: 5px; }
   .chart-legend i { display: inline-block; width: 9px; height: 9px; }
   .data-chart { display: block; width: 100%; overflow: visible; }
-  .data-chart text { fill: var(--ink); font-size: 11px; font-family: Arial, EFund, sans-serif; }
+  .data-chart text { fill: var(--ink); font-size: 11px; font-family: EFundLatin, EFund, sans-serif; }
   .data-chart .chart-value { font-size: 11px; }
   .has-lead > .chart-figure { height: calc(100% - 42px); }
   .data-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 16px; line-height: 1.4; }
@@ -70,7 +70,7 @@
   .deck { min-height: 100vh; display: flex; justify-content: center; align-items: center; box-sizing: border-box; padding-bottom: 60px; }
   .slide { display: none; transform: scale(var(--scale)); transform-origin: center center; }
   .slide[data-active] { display: block; }
-  .player { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #fff; color: #33404d; border-radius: 4px; font: 13px/1.4 Arial, EFund, sans-serif; z-index: 10; white-space: nowrap; }
+  .player { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #fff; color: #33404d; border-radius: 4px; font: 13px/1.4 EFundLatin, EFund, sans-serif; z-index: 10; white-space: nowrap; }
   .player button { min-width: 32px; min-height: 32px; padding: 4px 8px; border: 1px solid #ccd4da; border-radius: 3px; background: white; color: var(--blue); cursor: pointer; }
   .player button:hover:not(:disabled) { background: #eaf5fa; }
   .player button:focus-visible { outline: 3px solid var(--medium-blue); outline-offset: 2px; }
