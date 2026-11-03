@@ -1,0 +1,13 @@
+{
+  "name": "efund-slides-template",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "bun test tests/",
+    "build": "bun scripts/build.mjs",
+    "check": "bun scripts/check.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}

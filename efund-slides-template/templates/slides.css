@@ -1,0 +1,95 @@
+@layer reset, brand, content, player, modes;
+@layer reset {
+  :where(html, body) { margin: 0; padding: 0; }
+  :where(h1, h2, h3, p, figure, ol) { margin: 0; }
+  :where(button, table) { font: inherit; }
+  :where(.slide, .slide div, .slide h2, .slide h3, .slide p, .slide figure, .slide table, .slide th, .slide td, .slide ol, .slide li) { box-sizing: border-box; }
+}
+@layer brand {
+  :root { --blue: #005096; --medium-blue: #0078B4; --cyan: #1EB9E1; --ink: #3C3C3C; --gray: #969696; --paper: #fff; --scale: 1; }
+  body { background: #20252b; color: var(--ink); font-family: Arial, EFund, sans-serif; }
+  .slide { position: relative; isolation: isolate; background: var(--paper); overflow: hidden; flex: none; font-size: 16px; line-height: 1.5; }
+  .brand-background { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+  .slide-title { position: absolute; left: 38.1261px; top: 22.2186px; width: 672px; height: 43px; padding-top: 1.9px; color: white; font-size: 30.6667px; line-height: 1.2; font-weight: 700; white-space: nowrap; }
+  .page-number { position: absolute; left: 877.59px; top: 503.09px; width: 47.06px; height: 16px; font: 10.6667px/1.2 Arial, sans-serif; text-align: right; }
+  .source { position: absolute; left: 38.67px; top: 469px; width: 884px; height: 18px; color: var(--ink); font-size: 9.3333px; line-height: 1.4; white-space: nowrap; }
+  .cover-titles { position: absolute; left: 24.1671px; top: 117.9525px; width: 614.2224px; height: 110px; padding: 6px 9.6px; color: var(--blue); }
+  .slide:lang(zh) .cover-titles { font-family: EFund, Arial, sans-serif; }
+  .cover-titles h2 { font-size: 37.3333px; line-height: 44px; font-weight: 400; }
+  .cover-subtitle { font-size: 29.3333px; line-height: 44px; font-weight: 700; margin-top: 4.6px; }
+  .cover-meta { position: absolute; left: 24.1671px; top: 336.8971px; width: 680px; height: 77.55px; padding: 11.5px 9.6px 0; color: var(--blue); font-size: 18.6667px; line-height: 33.6px; white-space: pre-wrap; }
+  .slide:lang(zh) .cover-meta p:first-child { font-family: EFund, Arial, sans-serif; }
+  .slide:lang(en) .cover-titles { left: 23.0377px; top: 123.5998px; width: 690px; }
+  .slide:lang(en) .cover-subtitle { font-size: 24px; }
+  .slide:lang(en) .cover-meta { left: 26.426px; top: 340.6822px; }
+  /* Browser line boxes are calibrated against the source PDF text baselines. */
+  .closing-title { position: absolute; left: 36.5001px; top: 141.4682px; width: 850px; height: 100px; font-size: 60px; line-height: 51.5px; color: var(--blue); font-weight: 700; }
+  .slide:lang(en) .closing-title { top: 143.3244px; }
+  .closing-contact { position: absolute; left: 25.6757px; top: 272.2365px; width: 700px; height: 140px; padding: 12.45px 9.6px 0; font-size: 16px; line-height: 32.64px; color: var(--blue); white-space: pre-wrap; }
+}
+@layer content {
+  .body-text { position: absolute; left: 38.67px; top: 120px; width: 884px; height: 335px; font-size: 20px; line-height: 2; }
+  .body-text p + p { margin-top: 14px; }
+  h3 { color: var(--blue); font-size: 20px; line-height: 1.5; font-weight: 700; margin-bottom: 12px; }
+  .agenda-list { position: absolute; left: 34px; top: 107.57px; width: 858.71px; height: 392.17px; padding: 0; list-style: none; }
+  .agenda-list li { display: grid; grid-template-columns: 125.4805px 1fr; align-items: center; height: 56.0236px; color: var(--blue); font-size: 24px; line-height: 1.35; border-bottom: .6667px dashed #ccc; }
+  .agenda-number { padding-left: 9.6px; color: var(--cyan); font: 700 37.3333px/1.2 Arial, sans-serif; transform: translateY(3.3px); }
+  .agenda-label { padding-left: 9.6px; max-height: 54px; transform: translateY(2.2px); }
+  .agenda-list.has-active li:not(.agenda-active) .agenda-label { color: #ccc; }
+  .columns { position: absolute; left: 38.67px; top: 120px; width: 884px; height: 338px; display: grid; grid-template-columns: 410px 434px; gap: 40px; }
+  .narrative, .visual-column { min-width: 0; height: 338px; font-size: 16px; line-height: 1.5; }
+  .narrative p + p, .visual-column p + p { margin-top: 16px; }
+  .content-panel { position: absolute; left: 38.67px; top: 116px; width: 884px; height: 342px; }
+  .lead { font-size: 20px; line-height: 1.5; margin-bottom: 12px; }
+  .chart-figure { height: 100%; width: 100%; }
+  .chart-figure figcaption, .data-table caption { color: var(--blue); text-align: center; font-size: 13.3333px; line-height: 20px; font-weight: 400; }
+  .chart-legend { display: flex; justify-content: center; gap: 14px; height: 22px; font-size: 11px; line-height: 22px; white-space: nowrap; }
+  .chart-legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .chart-legend i { display: inline-block; width: 9px; height: 9px; }
+  .data-chart { display: block; width: 100%; overflow: visible; }
+  .data-chart text { fill: var(--ink); font-size: 11px; font-family: Arial, EFund, sans-serif; }
+  .data-chart .chart-value { font-size: 11px; }
+  .has-lead > .chart-figure { height: calc(100% - 42px); }
+  .data-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 16px; line-height: 1.4; }
+  .data-table caption { padding-bottom: 12px; }
+  .data-table :where(th, td) { padding: 9px 12px; text-align: left; overflow-wrap: anywhere; }
+  .data-table thead { color: white; background: var(--cyan); }
+  .data-table tbody th { font-weight: 400; }
+  .data-table tbody tr:nth-child(odd) { background: #f2f2f2; }
+  .data-table tbody td { font-variant-numeric: tabular-nums; }
+  .image-figure { height: 100%; width: 100%; }
+  .content-image { width: 100%; height: 100%; display: block; }
+  .fit-contain { object-fit: contain; }
+  .fit-cover { object-fit: cover; }
+  .has-lead > .image-figure { height: calc(100% - 42px); }
+  .visual-column:has(h3) .image-figure { height: calc(100% - 42px); }
+  .visual-column:has(h3) .chart-figure { height: calc(100% - 42px); }
+  .visually-hidden { position: absolute; top: 0; left: 0; clip-path: inset(50%); overflow: hidden; width: 1px; height: 1px; white-space: nowrap; }
+}
+@layer player {
+  .deck { min-height: 100vh; display: flex; justify-content: center; align-items: center; box-sizing: border-box; padding-bottom: 60px; }
+  .slide { display: none; transform: scale(var(--scale)); transform-origin: center center; }
+  .slide[data-active] { display: block; }
+  .player { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #fff; color: #33404d; border-radius: 4px; font: 13px/1.4 Arial, EFund, sans-serif; z-index: 10; white-space: nowrap; }
+  .player button { min-width: 32px; min-height: 32px; padding: 4px 8px; border: 1px solid #ccd4da; border-radius: 3px; background: white; color: var(--blue); cursor: pointer; }
+  .player button:hover:not(:disabled) { background: #eaf5fa; }
+  .player button:focus-visible { outline: 3px solid var(--medium-blue); outline-offset: 2px; }
+  .player button:disabled { color: #aaa; cursor: default; }
+  .player output { min-width: 45px; text-align: center; }
+}
+@layer modes {
+  .overview .deck { display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 24px 12px 80px; }
+  .overview .slide { display: block; transform: none; zoom: var(--overview-scale, 1); }
+  .measuring .slide { display: block !important; position: absolute !important; left: 0 !important; top: 0 !important; transform: none !important; zoom: 1 !important; visibility: hidden !important; }
+  .print-view .deck { display: block; padding: 0; min-height: 0; }
+  .print-view .slide { display: block; transform: none; zoom: 1; margin: 0 auto; }
+  .print-view .player { display: none; }
+  @media (max-width: 500px) { .player { gap: 3px; padding: 5px; } .player button { padding: 4px 5px; } }
+  @media print {
+    html, body { width: var(--slide-width); margin: 0; padding: 0; background: white; }
+    .deck, .overview .deck { display: block; padding: 0; margin: 0; min-height: 0; }
+    .slide, .overview .slide { display: block !important; width: var(--slide-width); height: var(--slide-height); transform: none; zoom: 1; margin: 0; break-after: page; break-inside: avoid; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .slide:last-child { break-after: auto; }
+    .player { display: none; }
+  }
+}

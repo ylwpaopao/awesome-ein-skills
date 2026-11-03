@@ -1,0 +1,105 @@
+{
+  "formatVersion": 1,
+  "source": {
+    "file": "易方达ppt模板V5.pptx",
+    "sha256": "4d7803ececefe8817373d7b993907e70ba6f37d80712cb010c815e06c4adb4a0"
+  },
+  "canvas": {
+    "emu": {
+      "width": 9144000,
+      "height": 5148263
+    },
+    "px": {
+      "width": 960.0,
+      "height": 540.5000524934384
+    }
+  },
+  "font": {
+    "file": "fonts/efund.woff2",
+    "names": [
+      "STHeiti_YFD",
+      "华文黑体_易方达"
+    ],
+    "sourceSha256": "c371bf3656aefdec1a056b461c8c9ef6d1b367105eb6cedcb23ade7687de5e92",
+    "sha256": "432581bce8bff5e0c2debbaaf1b480334c4cc2cc5e30be64434f28ef34bc1456",
+    "characterCount": 31252,
+    "normalizations": [
+      {
+        "table": "vhea",
+        "field": "tableVersion",
+        "from": "0x00010001",
+        "to": "0x00010000"
+      }
+    ]
+  },
+  "colors": {
+    "navy": "#005096",
+    "blue": "#0078B4",
+    "cyan": "#1EB9E1",
+    "lightBlue": "#B3EBFF",
+    "text": "#3C3C3C",
+    "gray": "#969696",
+    "line": "#CCCCCC",
+    "yellow": "#FFC819"
+  },
+  "templates": {
+    "cover-cn": {
+      "sourcePage": 2,
+      "background": "backgrounds/cover-cn.svg",
+      "sha256": "757bd63c313e8fcd872824e2fb0fab2dc43158141478377fb7a055e8ed407fa7",
+      "fixedText": "本报告仅供本公司（指易方达基金管理有限公司，下同）内部使用或供机构投资者、销售渠道及其他合作方的具备投资专业知识的工作\n人员等参考，本报告中的信息或所表述的意见并不构成任何要约或要约邀请，也不构成对任何人的投资建议或收益担保。未经本公司授\n权，本报告的任何部分均不得以任何方式制作任何形式的拷贝、复印件或复制品；或再次分发、披露给任何第三方；或以任何侵犯本公\n司版权的其他方式使用。任何本公司以外的机构或个人发送、披露本报告的，则由其自行承担由此产生的全部责任。\n仅供内部交流讨论，禁止外传",
+      "renderedFonts": [
+        "STHeiti_YFD"
+      ]
+    },
+    "cover-en": {
+      "sourcePage": 4,
+      "background": "backgrounds/cover-en.svg",
+      "sha256": "cd4a7690ee80914955b7f61a59f4481814d816bbf29916d2f081e8ce9de95327",
+      "fixedText": "This report is solely for internal use by E Fund Management Company Limited (hereinafter “the Company”) and for reference by institutional investors, sales \nchannels and personnel of other collaborative parties who possess professional knowledge in investments. The information or opinion stated in this report shall \nneither constitute any offer or invitation to treat nor constitute any investment advice or guarantee of return to any person. Unless authorized by the Company, no \npart of this report shall by any means be copied, duplicated or replicated in any form; or be re-distributed or disclosed to any third party; or be used in any other \nway which infringes the copyright of the Company’s. Any institution or individual apart from the Company who distributes or discloses this report shall assume all \nliability arising therefrom.\nFor Internal Use Only",
+      "renderedFonts": [
+        "ArialMT"
+      ]
+    },
+    "toc": {
+      "sourcePage": 14,
+      "background": "backgrounds/toc.svg",
+      "sha256": "59b82124b47cab56bd3a6367f3f5b5196c51d5f711ce8229bdcadc91afa1c525",
+      "fixedText": "仅供内部交流讨论，禁止外传",
+      "renderedFonts": [
+        "STHeiti_YFD"
+      ]
+    },
+    "content": {
+      "sourcePage": 10,
+      "background": "backgrounds/content.svg",
+      "sha256": "e9850433e529248205a5acbe3b087ffc11c92ccef08bace97b6a31e892c388b8",
+      "fixedText": "易方达基金管理有限公司\n仅供内部交流讨论，禁止外传",
+      "renderedFonts": [
+        "STHeiti_YFD"
+      ]
+    },
+    "ending-cn": {
+      "sourcePage": 45,
+      "background": "backgrounds/ending-cn.svg",
+      "sha256": "1253d1c11a72ddc900a793d4a53b847def5071d5f4c383abf9cc2176465a2ae1",
+      "fixedText": "",
+      "renderedFonts": []
+    },
+    "ending-en": {
+      "sourcePage": 46,
+      "background": "backgrounds/ending-en.svg",
+      "sha256": "e4ac2a828be4f7925a55c78503bf2b9e8c9eed6e844b22211717b4e195473434",
+      "fixedText": "",
+      "renderedFonts": []
+    }
+  },
+  "conversion": {
+    "renderer": "LibreOffice 26.8.2.2 9dea406ab7695df6325b11b0e19fdca8db4b7276",
+    "pymupdf": "1.26.5",
+    "method": "Retain slide-layout brand furniture; remove slide content, placeholders and page-number fields; render PDF to embedded SVG paths.",
+    "rebuild": "uv run scripts/convert_template.py --font /path/to/STHeiti_YFD.ttf",
+    "notes": "SVGs contain fixed brand artwork only. The full character-set WOFF2 supplies editable HTML text. PDF rendering can differ from Microsoft PowerPoint rasterization.",
+    "fontInput": "The font is supplied separately by the user when rebuilding; this manifest records its digest, not a redistribution license."
+  }
+}

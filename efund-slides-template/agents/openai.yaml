@@ -1,0 +1,4 @@
+interface:
+  display_name: "易方达网页幻灯片"
+  short_description: "沿用易方达 V5 模板制作离线 HTML 幻灯片"
+  default_prompt: "使用 $efund-slides-template 将我的材料制作成易方达风格的网页幻灯片，生成后检查每一页。"
