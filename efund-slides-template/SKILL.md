@@ -1,6 +1,8 @@
 ---
 name: efund-slides-template
 description: 按易方达模板制作或修改幻灯片，以 HTML 为制作母版；用户要求网页、PDF 或 PPT/PPTX 时均先完成 HTML，再按需导出。沿用 V5 品牌视觉及经过打磨的内容、版式与复核规则。
+metadata:
+  version: "0.1.1"
 ---
 
 # 易方达网页幻灯片
@@ -36,6 +38,8 @@ description: 按易方达模板制作或修改幻灯片，以 HTML 为制作母�
 6. 交付用户要求的格式，同时保留 HTML 来源；简短说明栅格 PPTX 的编辑边界，以及实际未完成的检查。没有逐页观察或目标软件打开证据时不声称已完成这些检查。
 
 ## 模板维护
+
+内容或行为变更时按语义化版本更新 `metadata.version` 与 `package.json.version`，两处保持一致。
 
 日常制作直接复用 `assets/backgrounds/` 与 `templates/`。仅用户更换源模板或要求重建底板时读取 [template.md](references/template.md)。保留源图形、页面比例、中文字体、蓝青配色、封面声明和正文页脚；不要把完整成品页作为背景图代替可编辑正文。
 
